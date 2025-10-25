@@ -11,7 +11,6 @@ import { cn } from "@/lib/utils";
 const menuItems = [
   { name: "Features", href: "#features" },
   { name: "Pricing", href: "#pricing" },
-  { name: "Contact", href: "#contact" },
 ];
 
 function Logo() {
