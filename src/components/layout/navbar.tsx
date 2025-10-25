@@ -29,12 +29,15 @@ function Logo() {
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    setIsClient(true);
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
     window.addEventListener("scroll", handleScroll);
+    handleScroll(); 
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
@@ -66,35 +69,37 @@ export function Navbar() {
            <GetStartedButton />
         </div>
         
-        <Sheet>
-          <SheetTrigger asChild className="ml-4 md:hidden">
-            <Button variant="ghost" size="icon">
-              <Menu className="h-6 w-6" />
-              <span className="sr-only">Open Menu</span>
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-[300px]">
-            <div className="p-6">
-                <div className="mb-8">
-                    <Logo />
-                </div>
-                <nav className="flex flex-col space-y-6">
-                  {menuItems.map((item) => (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      className="text-lg font-medium text-foreground hover:text-primary"
-                    >
-                      {item.name}
-                    </Link>
-                  ))}
-                </nav>
-                <div className="mt-8 flex flex-col space-y-3 border-t pt-6">
-                    <GetStartedButton />
-                </div>
-            </div>
-          </SheetContent>
-        </Sheet>
+        {isClient && (
+          <Sheet>
+            <SheetTrigger asChild className="ml-4 md:hidden">
+              <Button variant="ghost" size="icon">
+                <Menu className="h-6 w-6" />
+                <span className="sr-only">Open Menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[300px]">
+              <div className="p-6">
+                  <div className="mb-8">
+                      <Logo />
+                  </div>
+                  <nav className="flex flex-col space-y-6">
+                    {menuItems.map((item) => (
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        className="text-lg font-medium text-foreground hover:text-primary"
+                      >
+                        {item.name}
+                      </Link>
+                    ))}
+                  </nav>
+                  <div className="mt-8 flex flex-col space-y-3 border-t pt-6">
+                      <GetStartedButton />
+                  </div>
+              </div>
+            </SheetContent>
+          </Sheet>
+        )}
         
       </div>
     </header>
