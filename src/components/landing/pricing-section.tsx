@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Switch } from "@/components/ui/switch";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -76,40 +75,55 @@ export function PricingSection() {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8 max-w-7xl mx-auto items-start">
+        <div className="grid lg:grid-cols-3 gap-8 max-w-7xl mx-auto items-center">
           {pricingTiers.map((tier) => (
-            <Card key={tier.name} className={cn(
-              "flex flex-col h-full bg-white/80 backdrop-blur-sm rounded-xl shadow-lg hover:shadow-primary/10 hover:-translate-y-1 transition-all duration-300",
-              tier.isPopular ? "border-2 border-primary shadow-primary/20" : "border"
-            )}>
-              {tier.isPopular && (
-                <Badge className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg">Most Popular</Badge>
+            <div
+              key={tier.name}
+              className={cn(
+                "relative bg-white rounded-xl shadow-lg transition-all duration-300 flex flex-col",
+                tier.isPopular ? "py-8" : "py-8"
               )}
-              <CardHeader>
-                <CardTitle className="text-2xl font-semibold text-slate-800">{tier.name}</CardTitle>
-                <CardDescription className="text-muted-foreground">{tier.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <div className="mb-8">
-                  <span className="text-5xl font-bold text-slate-900">${isYearly ? Math.floor(tier.yearlyPrice / 12) : tier.monthlyPrice}</span>
-                  <span className="text-muted-foreground">/month</span>
-                  {isYearly && <p className="text-sm text-muted-foreground mt-1">Billed as ${tier.yearlyPrice}/year</p>}
+            >
+              {tier.isPopular && (
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[110%] h-full bg-accent rounded-xl" />
+              )}
+              
+              <div className={cn("relative z-10 text-center flex flex-col h-full px-8 pb-8", tier.isPopular ? "pt-0" : "pt-8" )}>
+                 {tier.isPopular && (
+                    <div className="bg-accent text-primary-foreground py-8 rounded-t-xl -mx-8 mb-8">
+                       <h3 className="text-2xl font-semibold">{tier.name}</h3>
+                    </div>
+                )}
+                {!tier.isPopular && (
+                    <h3 className="text-2xl font-semibold text-accent">{tier.name}</h3>
+                )}
+
+                <div className={cn("my-8", tier.isPopular ? 'text-primary-foreground' : 'text-slate-900' )}>
+                  <span className="text-5xl font-bold">
+                    ${isYearly ? Math.floor(tier.yearlyPrice / 12) : tier.monthlyPrice}
+                  </span>
+                  <span className={cn("text-lg ml-1", tier.isPopular ? "text-blue-200" : "text-muted-foreground")}>
+                    /month
+                  </span>
+                  {isYearly && <p className={cn("text-sm mt-1", tier.isPopular ? "text-blue-200" : "text-muted-foreground")}>Billed as ${tier.yearlyPrice}/year</p>}
                 </div>
-                <ul className="space-y-4">
+
+                <ul className={cn("space-y-4 text-left flex-grow", tier.isPopular ? "text-blue-100" : "text-slate-600")}>
                   {tier.features.map((feature, index) => (
-                    <li key={index} className="flex items-center">
-                      <Check className="w-5 h-5 text-primary mr-3 shrink-0" />
-                      <span className="text-slate-600">{feature}</span>
+                    <li key={index} className="flex items-start">
+                      <Check className={cn("w-5 h-5 mr-3 shrink-0", tier.isPopular ? "text-blue-300" : "text-primary")} />
+                      <span>{feature}</span>
                     </li>
                   ))}
                 </ul>
-              </CardContent>
-              <CardFooter>
-                <Button className="w-full" size="lg" variant={tier.isPopular ? "default" : "outline"}>
-                  Get Started
-                </Button>
-              </CardFooter>
-            </Card>
+
+                <div className="mt-10">
+                  <Button className="w-full" size="lg" variant={tier.isPopular ? "secondary" : "outline"}>
+                    Select Plan
+                  </Button>
+                </div>
+              </div>
+            </div>
           ))}
         </div>
       </div>
