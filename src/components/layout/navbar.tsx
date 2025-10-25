@@ -41,7 +41,7 @@ export function Navbar() {
   return (
     <header className={cn(
       "sticky top-0 z-50 w-full transition-all duration-300",
-      isScrolled ? "border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" : ""
+      isScrolled ? "border-b bg-background/80 backdrop-blur-sm" : ""
     )}>
       <div className="container flex h-20 items-center">
         <div className="mr-auto flex items-center">
@@ -60,7 +60,7 @@ export function Navbar() {
           ))}
         </nav>
 
-        <div className="hidden md:flex flex-1 items-center justify-end space-x-4">
+        <div className="hidden md:flex flex-1 items-center justify-end space-x-2">
             <Button variant="ghost">Sign In</Button>
             <Button>Sign Up</Button>
         </div>
