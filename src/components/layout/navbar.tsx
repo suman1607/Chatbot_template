@@ -12,6 +12,7 @@ const menuItems = [
   { name: "Features", href: "#features" },
   { name: "Pricing", href: "#pricing" },
   { name: "Testimonials", href: "#testimonials" },
+  { name: "FAQ", href: "#faq" },
 ];
 
 function Logo() {
