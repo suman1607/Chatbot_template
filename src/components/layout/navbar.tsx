@@ -44,11 +44,11 @@ export function Navbar() {
       isScrolled ? "border-b bg-background/80 backdrop-blur-sm" : ""
     )}>
       <div className="container flex h-20 items-center">
-        <div className="mr-auto flex items-center">
+        <div className="flex items-center md:flex-1">
           <Logo />
         </div>
         
-        <nav className="hidden md:flex items-center space-x-8 text-base font-medium">
+        <nav className="hidden md:flex items-center justify-center space-x-8 text-base font-medium">
           {menuItems.map((item) => (
             <Link
               key={item.name}
