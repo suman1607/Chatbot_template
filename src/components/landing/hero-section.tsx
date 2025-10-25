@@ -22,22 +22,14 @@ export function HeroSection() {
   if (!heroImage) return null;
 
   return (
-    <section className="py-20 md:py-32 bg-background relative overflow-hidden">
-        <div 
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60rem] h-[60rem] bg-[radial-gradient(ellipse_50%_50%_at_50%_50%,rgba(60,130,246,0.15),rgba(255,255,255,0))] rounded-full"
-            aria-hidden="true"
-        />
-        <div
-            className="absolute -top-40 -right-40 w-96 h-96 bg-purple-200/20 rounded-full blur-3xl opacity-50"
-            aria-hidden="true"
-        />
-        <div
-            className="absolute -bottom-40 -left-40 w-96 h-96 bg-blue-200/20 rounded-full blur-3xl opacity-50"
-            aria-hidden="true"
-        />
+    <section className="py-20 md:py-32 bg-white relative overflow-hidden">
+      <div className="absolute top-0 left-0 w-full h-full" aria-hidden="true">
+        <div className="absolute top-[-20%] left-[-20%] w-[50rem] h-[50rem] bg-blue-500/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-[-20%] right-[-20%] w-[50rem] h-[50rem] bg-purple-500/10 rounded-full blur-3xl" />
+        <div className="absolute top-[30%] right-[10%] w-[30rem] h-[30rem] bg-pink-500/10 rounded-full blur-3xl" />
+      </div>
 
       <div className="container px-4 text-center relative">
-        
         <h1 className="text-4xl md:text-6xl font-extrabold tracking-tighter mb-6 font-headline text-slate-800">
           Supercharge Your Customer Support with AI
         </h1>
