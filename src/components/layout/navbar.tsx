@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { Menu, MessageSquare } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { GetStartedButton } from "@/components/ui/get-started-button";
 
@@ -37,7 +37,7 @@ export function Navbar() {
       setIsScrolled(window.scrollY > 10);
     };
     window.addEventListener("scroll", handleScroll);
-    handleScroll(); 
+    handleScroll();
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
@@ -78,6 +78,7 @@ export function Navbar() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-[300px]">
+              <SheetTitle className="sr-only">Mobile Navigation Menu</SheetTitle>
               <div className="p-6">
                   <div className="mb-8">
                       <Logo />
