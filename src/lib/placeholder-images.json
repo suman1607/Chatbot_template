@@ -3,8 +3,8 @@
     {
       "id": "hero",
       "description": "A sleek, intuitive UI screenshot of a chat widget in action, with abstract 3D chat bubbles floating around it.",
-      "imageUrl": "https://images.unsplash.com/photo-1725798451557-fc60db3eb6a2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxjaGF0JTIwaW50ZXJmYWNlfGVufDB8fHx8MTc2MTMwNTQyN3ww&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "chat interface"
+      "imageUrl": "https://images.unsplash.com/photo-1556740758-90de374c12ad?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxhcHAlMjB1aXxlbnwwfHx8fDE3NjE3NDMwMzN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "app ui"
     }
   ]
 }

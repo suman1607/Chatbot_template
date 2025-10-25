@@ -58,7 +58,7 @@ export function HeroSection() {
                 data-ai-hint={heroImage.imageHint}
                 width={1024}
                 height={683}
-                className="rounded-xl shadow-2xl border border-border/10 transform rotate-[-3deg] hover:rotate-0 transition-transform duration-500"
+                className="rounded-xl shadow-2xl border border-border/10"
                 priority
             />
         </div>
