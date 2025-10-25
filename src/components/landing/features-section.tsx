@@ -33,11 +33,10 @@ const features = [
   },
   {
     icon: (
-      <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+       <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect width="40" height="40" rx="12" fill="hsl(var(--primary))" fillOpacity="0.1"/>
-        <path d="M13 27V13H20" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M13 19H27" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M27 13V27" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M14 27V14C14 13.4477 14.4477 13 15 13H25C25.5523 13 26 13.4477 26 14V27L20 24L14 27Z" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="hsl(var(--primary))" fillOpacity="0.2"/>
+        <path d="M18 19H22" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     ),
     title: "Knowledge Base",
@@ -83,8 +82,11 @@ const features = [
 
 export function FeaturesSection() {
   return (
-    <section id="features" className="py-20 md:py-32">
-      <div className="container px-4">
+    <section id="features" className="py-20 md:py-32 relative">
+       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[30rem] h-[30rem] bg-blue-500/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/3 -translate-y-2/3 w-[30rem] h-[30rem] bg-purple-500/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-2/3 -translate-y-1/3 w-[30rem] h-[30rem] bg-pink-500/10 rounded-full blur-3xl" />
+      <div className="container px-4 relative">
         <div className="text-center max-w-3xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold font-headline mb-4 text-slate-800">Powerful Features, Seamless Experience</h2>
           <p className="text-muted-foreground md:text-lg mb-12">
