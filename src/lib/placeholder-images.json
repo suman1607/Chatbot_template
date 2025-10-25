@@ -5,6 +5,30 @@
       "description": "A sleek, intuitive UI screenshot of a chat widget in action, with abstract 3D chat bubbles floating around it.",
       "imageUrl": "https://images.unsplash.com/photo-1556740758-90de374c12ad?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxhcHAlMjB1aXxlbnwwfHx8fDE3NjE3NDMwMzN8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "app ui"
+    },
+    {
+      "id": "avatar1",
+      "description": "Avatar for a female user.",
+      "imageUrl": "https://images.unsplash.com/photo-1679611978819-f10168367155?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHx3b21hbiUyMGZhY2V8ZW58MHx8fHwxNzYxMzg1MzcxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "woman face"
+    },
+    {
+      "id": "avatar2",
+      "description": "Avatar for a male user.",
+      "imageUrl": "https://images.unsplash.com/photo-1624395213081-608f51284ddd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxtYW4lMjBmYWNlfGVufDB8fHx8MTc2MTM1MzA4MXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "man face"
+    },
+    {
+      "id": "avatar3",
+      "description": "Avatar for a female user.",
+      "imageUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHx3b21hbiUyMGZhY2V8ZW58MHx8fHwxNzYxMzg1MzcxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "woman face"
+    },
+    {
+      "id": "avatar4",
+      "description": "Avatar for a male user.",
+      "imageUrl": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxtYW4lMjBmYWNlfGVufDB8fHx8MTc2MTM1MzA4MXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "man face"
     }
   ]
 }
