@@ -79,19 +79,19 @@ export function PricingSection() {
         <div className="grid lg:grid-cols-3 gap-8 max-w-7xl mx-auto items-start">
           {pricingTiers.map((tier) => (
             <Card key={tier.name} className={cn(
-              "flex flex-col h-full rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300",
-              tier.isPopular ? "border-2 border-primary relative" : ""
+              "flex flex-col h-full bg-white/80 backdrop-blur-sm rounded-xl shadow-lg hover:shadow-primary/10 hover:-translate-y-1 transition-all duration-300",
+              tier.isPopular ? "border-2 border-primary shadow-primary/20" : "border"
             )}>
               {tier.isPopular && (
-                <Badge className="absolute -top-4 left-1/2 -translate-x-1/2">Most Popular</Badge>
+                <Badge className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg">Most Popular</Badge>
               )}
               <CardHeader>
-                <CardTitle className="text-2xl font-semibold">{tier.name}</CardTitle>
-                <CardDescription>{tier.description}</CardDescription>
+                <CardTitle className="text-2xl font-semibold text-slate-800">{tier.name}</CardTitle>
+                <CardDescription className="text-muted-foreground">{tier.description}</CardDescription>
               </CardHeader>
               <CardContent className="flex-grow">
                 <div className="mb-8">
-                  <span className="text-5xl font-bold">${isYearly ? Math.floor(tier.yearlyPrice / 12) : tier.monthlyPrice}</span>
+                  <span className="text-5xl font-bold text-slate-900">${isYearly ? Math.floor(tier.yearlyPrice / 12) : tier.monthlyPrice}</span>
                   <span className="text-muted-foreground">/month</span>
                   {isYearly && <p className="text-sm text-muted-foreground mt-1">Billed as ${tier.yearlyPrice}/year</p>}
                 </div>
@@ -99,7 +99,7 @@ export function PricingSection() {
                   {tier.features.map((feature, index) => (
                     <li key={index} className="flex items-center">
                       <Check className="w-5 h-5 text-primary mr-3 shrink-0" />
-                      <span>{feature}</span>
+                      <span className="text-slate-600">{feature}</span>
                     </li>
                   ))}
                 </ul>
