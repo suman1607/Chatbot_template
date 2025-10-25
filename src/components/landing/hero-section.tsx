@@ -48,7 +48,7 @@ export function HeroSection() {
           </Button>
         </div>
         
-        <div className="relative max-w-5xl mx-auto">
+        <div className="relative max-w-4xl mx-auto">
             <div className="absolute -top-8 -left-8 w-24 h-24 bg-purple-200/50 rounded-full blur-2xl opacity-60 animate-blob"></div>
             <div className="absolute -bottom-8 -right-8 w-24 h-24 bg-blue-200/50 rounded-full blur-2xl opacity-60 animate-blob animation-delay-2000"></div>
 
@@ -56,8 +56,8 @@ export function HeroSection() {
                 src={heroImage.imageUrl}
                 alt={heroImage.description}
                 data-ai-hint={heroImage.imageHint}
-                width={1200}
-                height={800}
+                width={1024}
+                height={683}
                 className="rounded-xl shadow-2xl border border-border/10 transform rotate-[-3deg] hover:rotate-0 transition-transform duration-500"
                 priority
             />
