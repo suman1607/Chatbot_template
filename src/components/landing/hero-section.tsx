@@ -1,10 +1,11 @@
-import Image from "next/image";
+
+"use client";
+
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
 import Link from "next/link";
-
-const heroImage = PlaceHolderImages.find(p => p.id === "hero");
+import { cn } from "@/lib/utils";
 
 const TrustBadges = () => (
     <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-4 mt-24">
@@ -18,9 +19,89 @@ const TrustBadges = () => (
     </div>
 );
 
-export function HeroSection() {
-  if (!heroImage) return null;
+const ChatbotAnimation = () => {
+  const [isEyeOpen, setIsEyeOpen] = useState(true);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsEyeOpen(false);
+      setTimeout(() => setIsEyeOpen(true), 200); // Blink duration
+    }, 3000); // Time between blinks
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="relative w-[300px] h-[250px] md:w-[400px] md:h-[350px] mx-auto">
+      <svg
+        viewBox="0 0 200 200"
+        xmlns="http://www.w3.org/2000/svg"
+        className="w-full h-full"
+      >
+        {/* Shadow */}
+        <defs>
+          <filter id="soft-shadow" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="5" dy="10" stdDeviation="10" floodColor="#4A90E2" floodOpacity="0.3" />
+          </filter>
+        </defs>
+
+        {/* Main Body */}
+        <path
+          d="M 50,20
+             Q 20,20 20,50
+             L 20,110
+             Q 20,140 40,140
+             L 45,140
+             Q 50,150 55,140
+             L 150,140
+             Q 180,140 180,110
+             L 180,50
+             Q 180,20 150,20
+             Z"
+          fill="url(#body-gradient)"
+          filter="url(#soft-shadow)"
+        />
+        <defs>
+            <linearGradient id="body-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style={{stopColor: 'white', stopOpacity: 1}} />
+                <stop offset="100%" style={{stopColor: '#f0f4ff', stopOpacity: 1}} />
+            </linearGradient>
+        </defs>
+
+
+        {/* Eye */}
+        <g transform="translate(100, 80)">
+          <circle cx="0" cy="0" r="25" fill="#4A90E2" />
+          <circle cx="0" cy="0" r="12" fill="white" className="transition-transform duration-200 ease-in-out" style={{ transform: isEyeOpen ? 'scale(1)' : 'scale(1.1)' }}/>
+          <path
+            d="M -18,0
+               a 18,18 0 0,1 36,0"
+            fill="transparent"
+            stroke="white"
+            strokeWidth="3"
+            className={cn("transition-all duration-300 ease-in-out origin-center", {
+                'stroke-opacity-0': isEyeOpen,
+            })}
+            style={{
+              transform: isEyeOpen ? 'scaleY(0)' : 'scaleY(1)',
+            }}
+          />
+        </g>
+        
+        {/* Typing indicator dots */}
+        <g transform="translate(85, 120)">
+            <circle cx="0" cy="0" r="4" fill="#cbd5e1" className="animate-bounce" style={{animationDelay: '0s'}}/>
+            <circle cx="15" cy="0" r="4" fill="#cbd5e1" className="animate-bounce" style={{animationDelay: '0.2s'}}/>
+            <circle cx="30" cy="0" r="4" fill="#cbd5e1" className="animate-bounce" style={{animationDelay: '0.4s'}}/>
+        </g>
+
+      </svg>
+    </div>
+  );
+};
+
+
+export function HeroSection() {
   return (
     <section className="py-20 md:py-32 bg-white relative overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-full" aria-hidden="true">
@@ -52,15 +133,7 @@ export function HeroSection() {
             <div className="absolute -top-8 -left-8 w-24 h-24 bg-purple-200/50 rounded-full blur-2xl opacity-60 animate-blob"></div>
             <div className="absolute -bottom-8 -right-8 w-24 h-24 bg-blue-200/50 rounded-full blur-2xl opacity-60 animate-blob animation-delay-2000"></div>
 
-            <Image
-                src={heroImage.imageUrl}
-                alt={heroImage.description}
-                data-ai-hint={heroImage.imageHint}
-                width={1024}
-                height={683}
-                className="rounded-xl shadow-2xl border border-border/10"
-                priority
-            />
+            <ChatbotAnimation />
         </div>
       </div>
       <div className="container px-4">
@@ -69,3 +142,4 @@ export function HeroSection() {
     </section>
   );
 }
+
