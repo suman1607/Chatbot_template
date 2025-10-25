@@ -14,7 +14,7 @@ function Logo() {
 
 export function Footer() {
   return (
-    <footer className="border-t bg-card">
+    <footer className="border-t bg-background/50">
       <div className="container py-12">
         <div className="grid gap-8 grid-cols-1 md:grid-cols-12">
           <div className="md:col-span-3 flex flex-col gap-4 items-start">

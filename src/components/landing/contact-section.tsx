@@ -61,7 +61,7 @@ export function ContactSection() {
                 </div>
             </div>
 
-            <Card className="w-full max-w-lg mx-auto">
+            <Card className="w-full max-w-lg mx-auto bg-card/40 backdrop-blur-sm border-white/10">
               <CardHeader>
                 <CardTitle>Send us a message</CardTitle>
                 <CardDescription>We typically respond within 24 hours.</CardDescription>
