@@ -91,6 +91,12 @@ const ChatbotAnimation = () => {
 
 
 export function HeroSection() {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   return (
     <section className="py-20 md:py-32 bg-white relative overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-full" aria-hidden="true">
@@ -122,7 +128,7 @@ export function HeroSection() {
             <div className="absolute -top-8 -left-8 w-24 h-24 bg-purple-200/50 rounded-full blur-2xl opacity-60 animate-blob"></div>
             <div className="absolute -bottom-8 -right-8 w-24 h-24 bg-blue-200/50 rounded-full blur-2xl opacity-60 animate-blob animation-delay-2000"></div>
 
-            <ChatbotAnimation />
+            {isClient && <ChatbotAnimation />}
         </div>
       </div>
       <LogoTicker />
