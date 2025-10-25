@@ -114,12 +114,15 @@ export function HeroSection() {
         </p>
 
         <div className="flex justify-center gap-4 mb-16">
-          <Button size="lg" asChild className="shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-shadow">
+          <Button
+            asChild
+            className="py-7 px-10 rounded-full border-0 bg-white shadow-md tracking-wider uppercase text-base text-black transition-all duration-500 ease-in-out hover:tracking-[3px] hover:bg-[#5D24E5] hover:text-white hover:shadow-lg hover:shadow-[#5D24E5]/50 active:translate-y-2 active:shadow-none"
+          >
             <Link href="#pricing">
-                Get Started for Free <ArrowRight className="ml-2 h-5 w-5" />
+                Start Now
             </Link>
           </Button>
-          <Button size="lg" variant="outline">
+          <Button size="lg" variant="outline" className="py-7 px-10 rounded-full uppercase text-base tracking-wider">
             Book a Demo
           </Button>
         </div>
