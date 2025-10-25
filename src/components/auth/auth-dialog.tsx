@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { AuthForm } from "./auth-form";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 type AuthDialogProps = {
   open: boolean;
@@ -23,6 +24,9 @@ export function AuthDialog({ open, onOpenChange, children }: AuthDialogProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       {children}
       <DialogContent className="p-0 max-w-sm rounded-2xl border-0 bg-transparent shadow-none">
+        <DialogHeader className="sr-only">
+          <DialogTitle>{isLogin ? "Sign In" : "Sign Up"}</DialogTitle>
+        </DialogHeader>
         <AuthForm
           isLogin={isLogin}
           onToggle={() => setIsLogin(!isLogin)}
