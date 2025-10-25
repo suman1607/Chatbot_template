@@ -9,7 +9,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { Github, Instagram, Linkedin, Send, Twitter, MessageSquare } from "lucide-react"
+import { Github, Instagram, Linkedin, Send, Twitter, MessageSquare, Facebook } from "lucide-react"
 import Link from "next/link"
 
 function Logo() {
@@ -24,6 +24,11 @@ function Logo() {
   }
 
 export function Footer() {
+  const [year, setYear] = React.useState(new Date().getFullYear());
+
+  React.useEffect(() => {
+    setYear(new Date().getFullYear());
+  }, []);
 
   return (
     <footer className="relative border-t bg-background text-foreground transition-colors duration-300">
@@ -72,6 +77,19 @@ export function Footer() {
           <div className="relative">
             <h3 className="mb-4 text-lg font-semibold">Follow Us</h3>
             <div className="mb-6 flex space-x-4">
+            <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" size="icon" className="rounded-full">
+                      <Facebook className="h-4 w-4" />
+                      <span className="sr-only">Facebook</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Follow us on Facebook</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -82,19 +100,6 @@ export function Footer() {
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>Follow us on Twitter</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" className="rounded-full">
-                      <Github className="h-4 w-4" />
-                      <span className="sr-only">Github</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Follow us on Github</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -129,7 +134,7 @@ export function Footer() {
         </div>
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t pt-8 text-center md:flex-row">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} ChatGenius. All rights reserved.
+            © {year} ChatGenius. All rights reserved.
           </p>
           <nav className="flex gap-4 text-sm">
             <a href="#" className="transition-colors hover:text-primary">
