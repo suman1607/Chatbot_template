@@ -7,6 +7,7 @@ import { Menu, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import { GetStartedButton } from "@/components/ui/get-started-button";
 
 const menuItems = [
   { name: "Features", href: "#features" },
@@ -62,8 +63,7 @@ export function Navbar() {
         </nav>
 
         <div className="hidden md:flex flex-1 items-center justify-end space-x-2">
-            <Button variant="ghost">Sign In</Button>
-            <Button>Sign Up</Button>
+           <GetStartedButton />
         </div>
         
         <Sheet>
@@ -90,8 +90,7 @@ export function Navbar() {
                   ))}
                 </nav>
                 <div className="mt-8 flex flex-col space-y-3 border-t pt-6">
-                    <Button variant="outline">Sign In</Button>
-                    <Button>Sign Up</Button>
+                    <GetStartedButton />
                 </div>
             </div>
           </SheetContent>
