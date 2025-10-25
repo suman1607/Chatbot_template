@@ -20,6 +20,8 @@ const pricingTiers = [
       "Standard Analytics",
     ],
     isPopular: false,
+    gradientClass: "from-orange-100/70 to-white",
+    waveColor: "text-orange-200/80",
   },
   {
     name: "Pro",
@@ -35,6 +37,8 @@ const pricingTiers = [
       "Basic Integrations",
     ],
     isPopular: true,
+    gradientClass: "from-purple-100/70 to-white",
+    waveColor: "text-purple-200/80",
   },
   {
     name: "Business",
@@ -50,8 +54,23 @@ const pricingTiers = [
       "Premium Integrations",
     ],
     isPopular: false,
+    gradientClass: "from-blue-100/70 to-white",
+    waveColor: "text-blue-200/80",
   },
 ];
+
+const CheckIcon = () => (
+    <div className="w-5 h-5 bg-slate-800 text-white rounded-full flex items-center justify-center shrink-0">
+        <Check className="w-3.5 h-3.5" />
+    </div>
+);
+
+const WavyBg = ({ className }: { className?: string }) => (
+    <svg className={cn("absolute bottom-0 left-0 w-full h-auto opacity-50", className)} viewBox="0 0 357 183" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M357 101.5C357 101.5 288.799 174.5 178.5 174.5C68.201 174.5 0 101.5 0 101.5V183H357V101.5Z" fill="currentColor"/>
+    </svg>
+);
+
 
 export function PricingSection() {
   const [isYearly, setIsYearly] = useState(false);
@@ -60,67 +79,59 @@ export function PricingSection() {
     <section id="pricing" className="py-20 md:py-32">
       <div className="container px-4">
         <div className="text-center max-w-3xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold font-headline mb-4">Find the Perfect Plan</h2>
+          <h2 className="text-3xl md:text-4xl font-bold font-headline mb-4 text-slate-800">Find the Perfect Plan</h2>
           <p className="text-muted-foreground md:text-lg mb-8">
             Start for free, then grow with us. Choose the plan that's right for your business.
           </p>
         </div>
 
         <div className="flex justify-center items-center space-x-4 mb-12">
-          <span>Monthly</span>
+          <span className="font-medium text-slate-600">Monthly</span>
           <Switch checked={isYearly} onCheckedChange={setIsYearly} aria-label="Toggle billing cycle" />
           <div className="flex items-center">
-            <span>Yearly</span>
-            <Badge variant="outline" className="ml-2 border-green-500 text-green-600 bg-green-50">Save 2 months</Badge>
+            <span className="font-medium text-slate-600">Yearly</span>
+            <Badge variant="outline" className="ml-2 border-green-500/50 text-green-700 bg-green-50 font-medium">Save 16%</Badge>
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8 max-w-7xl mx-auto items-center">
+        <div className="grid lg:grid-cols-3 gap-8 max-w-7xl mx-auto items-start">
           {pricingTiers.map((tier) => (
             <div
               key={tier.name}
               className={cn(
-                "relative bg-white rounded-xl shadow-lg transition-all duration-300 flex flex-col",
-                tier.isPopular ? "py-8" : "py-8"
+                "relative bg-white/60 rounded-2xl shadow-lg transition-all duration-300 flex flex-col overflow-hidden backdrop-blur-sm",
+                tier.isPopular ? "border-2 border-primary shadow-primary/20" : "border border-slate-200"
               )}
             >
-              {tier.isPopular && (
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[110%] h-full bg-accent rounded-xl" />
-              )}
-              
-              <div className={cn("relative z-10 text-center flex flex-col h-full px-8 pb-8", tier.isPopular ? "pt-0" : "pt-8" )}>
-                 {tier.isPopular && (
-                    <div className="bg-accent text-primary-foreground py-8 rounded-t-xl -mx-8 mb-8">
-                       <h3 className="text-2xl font-semibold">{tier.name}</h3>
-                    </div>
-                )}
-                {!tier.isPopular && (
-                    <h3 className="text-2xl font-semibold text-accent">{tier.name}</h3>
-                )}
+              <div className={cn("absolute inset-0 bg-gradient-to-br -z-10", tier.gradientClass)} />
+              <WavyBg className={tier.waveColor} />
 
-                <div className={cn("my-8", tier.isPopular ? 'text-primary-foreground' : 'text-slate-900' )}>
-                  <span className="text-5xl font-bold">
+              <div className="relative z-10 p-8 flex flex-col h-full">
+                <h3 className="text-2xl font-bold text-slate-800">{tier.name}</h3>
+                <p className="text-muted-foreground mt-2 min-h-[40px]">{tier.description}</p>
+                
+                <div className="my-8">
+                  <span className="text-5xl font-extrabold text-slate-900 tracking-tight">
                     ${isYearly ? Math.floor(tier.yearlyPrice / 12) : tier.monthlyPrice}
                   </span>
-                  <span className={cn("text-lg ml-1", tier.isPopular ? "text-blue-200" : "text-muted-foreground")}>
+                  <span className="text-lg ml-1 font-medium text-muted-foreground">
                     /month
                   </span>
-                  {isYearly && <p className={cn("text-sm mt-1", tier.isPopular ? "text-blue-200" : "text-muted-foreground")}>Billed as ${tier.yearlyPrice}/year</p>}
                 </div>
+                
+                <div className="mt-auto">
+                    <Button className="w-full" size="lg" variant={tier.isPopular ? "default" : "outline"}>
+                        Select Plan
+                    </Button>
 
-                <ul className={cn("space-y-4 text-left flex-grow", tier.isPopular ? "text-blue-100" : "text-slate-600")}>
-                  {tier.features.map((feature, index) => (
-                    <li key={index} className="flex items-start">
-                      <Check className={cn("w-5 h-5 mr-3 shrink-0", tier.isPopular ? "text-blue-300" : "text-primary")} />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="mt-10">
-                  <Button className="w-full" size="lg" variant={tier.isPopular ? "secondary" : "outline"}>
-                    Select Plan
-                  </Button>
+                    <ul className="space-y-4 text-left mt-8 flex-grow">
+                    {tier.features.map((feature, index) => (
+                        <li key={index} className="flex items-start">
+                        <CheckIcon />
+                        <span className="ml-3 text-slate-600">{feature}</span>
+                        </li>
+                    ))}
+                    </ul>
                 </div>
               </div>
             </div>
