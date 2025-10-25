@@ -107,7 +107,14 @@ export function PricingSection() {
               <WavyBg className={tier.waveColor} />
 
               <div className="relative z-10 p-8 flex flex-col h-full">
-                <h3 className="text-2xl font-bold text-slate-800">{tier.name}</h3>
+                <div className="flex justify-between items-center">
+                  <h3 className="text-2xl font-bold text-slate-800">{tier.name}</h3>
+                  {tier.isPopular && (
+                    <Badge variant="default" className="bg-primary hover:bg-primary">
+                      Most Popular
+                    </Badge>
+                  )}
+                </div>
                 <p className="text-muted-foreground mt-2 min-h-[40px]">{tier.description}</p>
                 
                 <div className="my-8">
