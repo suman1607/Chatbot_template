@@ -1,7 +1,8 @@
 
+
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Avatar,
   AvatarFallback,
@@ -167,9 +168,9 @@ const SparkleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 
 export default function ConversationsPage() {
-    const [conversations, setConversations] = useState(conversationsData);
-    const [selectedConversation, setSelectedConversation] = useState(conversationsData[0]);
-    const [activeTab, setActiveTab] = useState("All messages");
+    const [conversations, setConversations] = React.useState(conversationsData);
+    const [selectedConversation, setSelectedConversation] = React.useState(conversationsData[0]);
+    const [activeTab, setActiveTab] = React.useState("All messages");
 
     const filteredConversations = conversations.filter(convo => {
       if (activeTab === 'Unread') {
@@ -243,8 +244,8 @@ export default function ConversationsPage() {
                         <div className="flex items-center justify-between p-4 border-b bg-white rounded-tr-xl">
                             <div className="flex items-center gap-3">
                                 <div>
-                                    <p className="font-bold text-lg">{selectedConversation.customer.name}</p>
-                                    <p className="text-sm text-gray-500">{selectedConversation.customer.description}</p>
+                                    <p className="font-bold text-lg">{selectedConversation.name}</p>
+                                    <p className="text-sm text-gray-500">Active conversation</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
