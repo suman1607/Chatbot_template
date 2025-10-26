@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -129,7 +130,7 @@ export default function DashboardLayout({
                         <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                     </div>
                 </div>
-                <div className="w-full">
+                <div className="w-full flex justify-center">
                     <LogoutButton />
                 </div>
             </div>
