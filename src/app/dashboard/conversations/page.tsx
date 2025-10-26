@@ -22,10 +22,11 @@ import {
   Link2,
   ThumbsUp,
   ThumbsDown,
+  MessageSquare,
 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
-const conversations = [
+const conversationsData = [
     { id: 1, name: "Anna Johnson", avatar: "https://picsum.photos/seed/1/40/40", lastMessage: "Hey! How's it going today? I've been...", time: "09:15 AM", unread: 4, active: true },
     { id: 2, name: "Brian Carter", avatar: "https://picsum.photos/seed/2/40/40", lastMessage: "Can you help me figure this out? I've bee...", time: "09:22 AM", unread: 0 },
     { id: 3, name: "Clara Smith", avatar: "https://picsum.photos/seed/3/40/40", lastMessage: "OMG, you won't believe what just hap...", time: "09:30 AM", unread: 0 },
@@ -65,8 +66,18 @@ const SparkleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 
 export default function ConversationsPage() {
-    const [selectedConversation, setSelectedConversation] = useState(conversations[0]);
+    const [conversations, setConversations] = useState(conversationsData);
+    const [selectedConversation, setSelectedConversation] = useState(conversationsData[0]);
     const [activeTab, setActiveTab] = useState("All messages");
+
+    const filteredConversations = conversations.filter(convo => {
+      if (activeTab === 'Unread') {
+        return convo.unread > 0;
+      }
+      return true;
+    });
+
+    const tabs = ["All messages", "Unread"];
 
     return (
         <div className="flex flex-row h-[calc(100vh-100px)] bg-white rounded-xl shadow-lg border">
@@ -78,7 +89,7 @@ export default function ConversationsPage() {
                         <Button variant="ghost" size="icon"><Search className="w-5 h-5 text-gray-500" /></Button>
                     </div>
                     <div className="flex items-center gap-4 text-sm text-gray-500">
-                        {["All messages", "Unread", "Favorites", "Work", "Friends"].map(tab => (
+                        {tabs.map(tab => (
                             <button 
                                 key={tab} 
                                 onClick={() => setActiveTab(tab)}
@@ -98,7 +109,7 @@ export default function ConversationsPage() {
                 </div>
                 
                 <div className="flex-grow overflow-y-auto">
-                    {conversations.map(convo => (
+                    {filteredConversations.map(convo => (
                         <div
                             key={convo.id}
                             className={`flex items-center gap-4 p-4 cursor-pointer border-r-4 ${selectedConversation?.id === convo.id ? 'bg-orange-50 border-primary' : 'border-transparent hover:bg-gray-50'}`}
