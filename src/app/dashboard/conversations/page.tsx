@@ -171,13 +171,18 @@ export default function ConversationsPage() {
     const [conversations, setConversations] = React.useState(conversationsData);
     const [selectedConversation, setSelectedConversation] = React.useState(conversationsData[0]);
     const [activeTab, setActiveTab] = React.useState("All messages");
+    const [searchQuery, setSearchQuery] = React.useState("");
 
-    const filteredConversations = conversations.filter(convo => {
-      if (activeTab === 'Unread') {
-        return convo.unread > 0;
-      }
-      return true;
-    });
+    const filteredConversations = conversations
+      .filter(convo => {
+        if (activeTab === 'Unread') {
+          return convo.unread > 0;
+        }
+        return true;
+      })
+      .filter(convo => 
+        convo.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
 
     const tabs = ["All messages", "Unread"];
 
@@ -188,7 +193,15 @@ export default function ConversationsPage() {
                 <div className="p-4 border-b">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-xl font-bold">Messages</h2>
-                        <Button variant="ghost" size="icon"><Search className="w-5 h-5 text-gray-500" /></Button>
+                         <div className="relative w-full max-w-xs">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                            <Input 
+                                placeholder="Search..." 
+                                className="pl-10"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
                     </div>
                     <div className="flex items-center gap-4 text-sm text-gray-500">
                         {tabs.map(tab => (
