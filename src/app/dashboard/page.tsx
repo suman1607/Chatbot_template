@@ -21,7 +21,7 @@ import {
   Tag,
   DollarSign,
   ArrowUp,
-  ArrowDown,
+  ArrowRight,
   BarChart,
   List,
   Plus,
@@ -31,14 +31,6 @@ import {
 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import {
   ChartContainer,
@@ -53,9 +45,11 @@ import {
   PieChart,
   ResponsiveContainer,
   Cell,
+  RadialBar,
+  RadialBarChart
 } from 'recharts';
 
-const chartData = [
+const areaChartData = [
   { month: 'January', desktop: 186 },
   { month: 'February', desktop: 305 },
   { month: 'March', desktop: 237 },
@@ -64,9 +58,9 @@ const chartData = [
   { month: 'June', desktop: 214 },
 ];
 
-const chartConfig = {
+const areaChartConfig = {
   desktop: {
-    label: 'Desktop',
+    label: 'Conversations',
     color: 'hsl(var(--primary))',
   },
 } satisfies ChartConfig;
@@ -83,6 +77,16 @@ const pieChartData = [
   { name: 'messenger', value: 15, fill: 'hsl(var(--chart-3))' },
 ];
 
+const radialChartData = [
+    { name: 'AI Resolved', value: 74, fill: 'hsl(var(--primary))' },
+]
+
+const radialChartConfig = {
+  value: {
+    label: 'AI Resolved',
+  },
+} satisfies ChartConfig
+
 const recentActivities = [
     { icon: <CheckCircle className="w-4 h-4 text-green-500" />, text: "AI auto-resolved a billing question", time: "2m ago" },
     { icon: <MessageSquare className="w-4 h-4 text-blue-500" />, text: "Agent Sarah replied in 2m", time: "10m ago" },
@@ -94,7 +98,7 @@ export default function DashboardPage() {
   const { user } = useUser();
 
   return (
-    <div className="flex-1 space-y-8">
+    <div className="flex-1 space-y-6">
       <div className="flex items-center justify-between space-y-2">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
@@ -104,7 +108,13 @@ export default function DashboardPage() {
             Ready to scale support? Here’s your business at a glance.
           </p>
         </div>
+        <div className="flex items-center space-x-2">
+            <Button>
+                Show my Tasks <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+        </div>
       </div>
+
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -115,8 +125,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">2,430</div>
-            <p className="text-xs text-muted-foreground flex items-center">
-              <ArrowUp className="h-3 w-3 text-green-500 mr-1" />
+            <p className="text-xs text-muted-foreground">
               +8% from last month
             </p>
           </CardContent>
@@ -128,8 +137,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">74%</div>
-            <Progress value={74} className="h-2 mt-2" />
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-muted-foreground">
               AI Savings: 7.2hr
             </p>
           </CardContent>
@@ -141,9 +149,8 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">4.7/5</div>
-            <p className="text-xs text-muted-foreground flex items-center">
-              <ArrowUp className="h-3 w-3 text-green-500 mr-1" />
-              +0.2 point last 30 days
+            <p className="text-xs text-muted-foreground">
+              +0.2 points in last 30 days
             </p>
           </CardContent>
         </Card>
@@ -156,25 +163,26 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">3</div>
-            <div className="flex -space-x-2 overflow-hidden mt-2">
+            <div className="flex -space-x-2 overflow-hidden mt-1">
               <Avatar className="inline-block h-6 w-6 rounded-full ring-2 ring-background">
-                <AvatarImage src="https://picsum.photos/seed/1/32/32" />
+                <AvatarImage src="https://picsum.photos/seed/1/32/32" data-ai-hint="woman face" />
                 <AvatarFallback>A</AvatarFallback>
               </Avatar>
               <Avatar className="inline-block h-6 w-6 rounded-full ring-2 ring-background">
-                <AvatarImage src="https://picsum.photos/seed/2/32/32" />
+                <AvatarImage src="https://picsum.photos/seed/2/32/32" data-ai-hint="man face" />
                 <AvatarFallback>B</AvatarFallback>
               </Avatar>
               <Avatar className="inline-block h-6 w-6 rounded-full ring-2 ring-background">
-                <AvatarImage src="https://picsum.photos/seed/3/32/32" />
+                <AvatarImage src="https://picsum.photos/seed/3/32/32" data-ai-hint="woman face" />
                 <AvatarFallback>C</AvatarFallback>
               </Avatar>
             </div>
           </CardContent>
         </Card>
       </div>
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+      
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+        <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <Ticket className="w-5 h-5 text-muted-foreground" /> New Ticket Requests
@@ -188,21 +196,7 @@ export default function DashboardPage() {
             <Button size="sm">Assign</Button>
           </CardFooter>
         </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Puzzle className="w-5 h-5 text-muted-foreground" /> Widget Installs
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold">4</div>
-            <p className="text-sm text-muted-foreground">Websites live</p>
-          </CardContent>
-          <CardFooter>
-            <Button size="sm" variant="outline">View Widgets</Button>
-          </CardFooter>
-        </Card>
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-3">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
                     <Tag className="w-5 h-5 text-muted-foreground" /> Subscription & Usage
@@ -222,17 +216,31 @@ export default function DashboardPage() {
                 </div>
             </CardContent>
         </Card>
+        <Card className="lg:col-span-2">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                    <DollarSign className="w-5 h-5 text-muted-foreground" /> Revenue
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="text-4xl font-bold">$341.23</div>
+                <p className="text-sm text-muted-foreground flex items-center">
+                    <ArrowUp className="h-3 w-3 text-green-500 mr-1" />
+                    +18% from last month
+                </p>
+            </CardContent>
+        </Card>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-2 h-[350px] flex flex-col">
           <CardHeader>
             <CardTitle>Conversation Analytics</CardTitle>
             <CardDescription>Conversations per day (last 30 days)</CardDescription>
           </CardHeader>
-          <CardContent className="h-[250px] w-full">
-            <ChartContainer config={chartConfig} className="w-full h-full">
-              <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -30, bottom: 0 }}>
+          <CardContent className="flex-1">
+            <ChartContainer config={areaChartConfig} className="w-full h-full">
+              <AreaChart data={areaChartData} margin={{ top: 5, right: 10, left: -30, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
@@ -248,12 +256,12 @@ export default function DashboardPage() {
             </ChartContainer>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="h-[350px] flex flex-col">
           <CardHeader>
             <CardTitle>Most Active Channels</CardTitle>
             <CardDescription>Top sources for conversations</CardDescription>
           </CardHeader>
-          <CardContent className="h-[250px] flex items-center justify-center">
+          <CardContent className="flex-1 flex items-center justify-center">
             <ChartContainer config={pieChartConfig} className="w-full h-full">
               <PieChart>
                 <ChartTooltip content={<ChartTooltipContent hideLabel />} />
@@ -277,7 +285,9 @@ export default function DashboardPage() {
                 <div className="space-y-4">
                     {recentActivities.map((activity, index) => (
                         <div key={index} className="flex items-center gap-3">
-                            {activity.icon}
+                            <div className="p-2 bg-muted rounded-full">
+                                {activity.icon}
+                            </div>
                             <p className="text-sm flex-1">{activity.text}</p>
                             <p className="text-xs text-muted-foreground">{activity.time}</p>
                         </div>
@@ -301,3 +311,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+
