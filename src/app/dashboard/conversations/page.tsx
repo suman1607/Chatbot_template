@@ -172,6 +172,7 @@ export default function ConversationsPage() {
     const [selectedConversation, setSelectedConversation] = React.useState(conversationsData[0]);
     const [activeTab, setActiveTab] = React.useState("All messages");
     const [searchQuery, setSearchQuery] = React.useState("");
+    const [isSearchVisible, setIsSearchVisible] = React.useState(false);
 
     const filteredConversations = conversations
       .filter(convo => {
@@ -193,14 +194,24 @@ export default function ConversationsPage() {
                 <div className="p-4 border-b">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-xl font-bold">Messages</h2>
-                         <div className="relative w-full max-w-xs">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                            <Input 
-                                placeholder="Search..." 
-                                className="pl-10"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                            />
+                        <div className="flex items-center gap-2">
+                            {isSearchVisible ? (
+                                <div className="relative w-full max-w-xs">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                    <Input 
+                                        placeholder="Search..." 
+                                        className="pl-10"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        onBlur={() => setIsSearchVisible(false)}
+                                        autoFocus
+                                    />
+                                </div>
+                            ) : (
+                                <Button variant="ghost" size="icon" onClick={() => setIsSearchVisible(true)}>
+                                    <Search className="w-5 h-5 text-gray-500" />
+                                </Button>
+                            )}
                         </div>
                     </div>
                     <div className="flex items-center gap-4 text-sm text-gray-500">
