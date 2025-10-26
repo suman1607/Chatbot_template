@@ -168,7 +168,7 @@ export default function AnalyticsPage() {
                         <CardDescription>Breakdown of AI vs. agent handling</CardDescription>
                     </CardHeader>
                     <CardContent className="flex flex-col items-center justify-center">
-                        <div className="relative w-full h-[200px]">
+                        <div className="relative w-full h-[200px] mb-4">
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
                                     <Pie
@@ -195,7 +195,7 @@ export default function AnalyticsPage() {
                                 </div>
                             </div>
                         </div>
-                        <div className="flex justify-center gap-4 mt-6">
+                        <div className="flex justify-center gap-4">
                             <div className="flex items-center gap-2 text-sm"><div className="w-3 h-3 rounded-full bg-green-500" />AI Resolved</div>
                             <div className="flex items-center gap-2 text-sm"><div className="w-3 h-3 rounded-full bg-orange-500" />Agent Handled</div>
                         </div>
@@ -252,7 +252,7 @@ export default function AnalyticsPage() {
                          <CardTitle>Customer Satisfaction (CSAT)</CardTitle>
                         <CardDescription>Overall score from user feedback</CardDescription>
                     </CardHeader>
-                    <CardContent className="flex flex-col justify-between h-full pt-0">
+                    <CardContent>
                        <div className="text-center my-4">
                            <div className="text-5xl font-bold flex items-baseline justify-center">4.8<span className="text-3xl text-muted-foreground">/5</span></div>
                        </div>
