@@ -93,7 +93,7 @@ export default function DashboardLayout({
         <SidebarHeader>
           <div className="flex items-center gap-2">
             <Bot className="w-8 h-8 text-primary" />
-            <span className="text-xl font-bold">ChatGenius</span>
+            <span className="text-xl font-bold group-data-[collapsible=icon]:hidden">ChatGenius</span>
           </div>
         </SidebarHeader>
         <SidebarContent>
@@ -125,18 +125,18 @@ export default function DashboardLayout({
                 ))}
             </SidebarMenu>
             <SidebarSeparator />
-            <div className="flex items-center gap-3 p-2">
+            <div className="flex items-center gap-3 p-2 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:justify-center">
                 <Avatar className="w-9 h-9">
                     <AvatarImage src={user.photoURL ?? ''} alt="User avatar" />
                     <AvatarFallback>
                         <UserIcon />
                     </AvatarFallback>
                 </Avatar>
-                <div className="flex-1 overflow-hidden">
+                <div className="flex-1 overflow-hidden group-data-[collapsible=icon]:hidden">
                     <p className="text-sm font-semibold truncate">{user.displayName ?? user.email}</p>
                     <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                 </div>
-                <Button variant="ghost" size="icon" onClick={handleLogout} className="text-muted-foreground hover:text-foreground shrink-0">
+                <Button variant="ghost" size="icon" onClick={handleLogout} className="text-muted-foreground hover:text-foreground shrink-0 group-data-[collapsible=icon]:hidden">
                     <LogOut size={18} />
                 </Button>
             </div>
