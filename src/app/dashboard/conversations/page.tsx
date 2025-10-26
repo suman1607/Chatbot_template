@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React from 'react';
@@ -162,7 +163,7 @@ export default function ConversationsPage() {
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     onBlur={() => { if(!searchQuery) setIsSearchVisible(false) }}
                                 />
-                                <Button variant="ghost" size="icon" onClick={() => setIsSearchVisible(true)} className="absolute right-0">
+                                <Button variant="ghost" size="icon" onClick={() => setIsSearchVisible(!isSearchVisible)} className="absolute right-0">
                                     <Search className="w-5 h-5 text-gray-500" />
                                 </Button>
                             </div>
@@ -292,3 +293,4 @@ export default function ConversationsPage() {
         </div>
     );
 }
+
