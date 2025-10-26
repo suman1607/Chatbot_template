@@ -231,7 +231,7 @@ export default function DashboardPage() {
             <CardDescription>Conversations per day (last 30 days)</CardDescription>
           </CardHeader>
           <CardContent className="h-[250px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
+            <ChartContainer config={chartConfig} className="w-full h-full">
               <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -30, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
@@ -245,7 +245,7 @@ export default function DashboardPage() {
                 />
                 <Area type="monotone" dataKey="desktop" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorUv)" />
               </AreaChart>
-            </ResponsiveContainer>
+            </ChartContainer>
           </CardContent>
         </Card>
         <Card>
@@ -254,7 +254,7 @@ export default function DashboardPage() {
             <CardDescription>Top sources for conversations</CardDescription>
           </CardHeader>
           <CardContent className="h-[250px] flex items-center justify-center">
-            <ResponsiveContainer width="100%" height="100%">
+            <ChartContainer config={pieChartConfig} className="w-full h-full">
               <PieChart>
                 <ChartTooltip content={<ChartTooltipContent hideLabel />} />
                 <Pie data={pieChartData} dataKey="value" nameKey="name" innerRadius={50}>
@@ -263,7 +263,7 @@ export default function DashboardPage() {
                     ))}
                 </Pie>
               </PieChart>
-            </ResponsiveContainer>
+            </ChartContainer>
           </CardContent>
         </Card>
       </div>
@@ -301,5 +301,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
