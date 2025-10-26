@@ -204,7 +204,7 @@ export default function WidgetsPage() {
                                 <TabsTrigger value="domains">Domain Whitelist</TabsTrigger>
                             </TabsList>
                             <TabsContent value="install" className="mt-4">
-                               <p className="text-sm text-muted-foreground mb-2">Copy and paste this code into the `<head>` section of your website.</p>
+                               <p className="text-sm text-muted-foreground mb-2">Copy and paste this code into the `&lt;head&gt;` section of your website.</p>
                                <div className="relative bg-gray-900 text-white p-4 rounded-lg font-mono text-xs">
                                    <code>{installationCode}</code>
                                    <Button size="sm" variant="ghost" className="absolute top-2 right-2 text-white hover:bg-gray-700" onClick={copyToClipboard}>
