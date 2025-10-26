@@ -252,8 +252,10 @@ export default function AnalyticsPage() {
                          <CardTitle>Customer Satisfaction (CSAT)</CardTitle>
                         <CardDescription>Overall score from user feedback</CardDescription>
                     </CardHeader>
-                    <CardContent className="flex flex-col items-center justify-around h-full pt-0">
-                       <div className="text-5xl font-bold flex items-baseline">4.8<span className="text-3xl text-muted-foreground">/5</span></div>
+                    <CardContent className="flex flex-col justify-between h-full pt-0">
+                       <div className="text-center my-4">
+                           <div className="text-5xl font-bold flex items-baseline justify-center">4.8<span className="text-3xl text-muted-foreground">/5</span></div>
+                       </div>
                        <div className="w-full space-y-4">
                            {satisfactionData.map(item => (
                                <div key={item.title} className="flex items-center p-3 bg-gray-50 rounded-lg">
