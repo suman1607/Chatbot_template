@@ -46,7 +46,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 const WidgetPreview = ({ settings, isMobile, chatOpen, setChatOpen }: any) => {
     
@@ -124,6 +124,7 @@ export default function WidgetsPage() {
     const [domain, setDomain] = useState('');
     const [whitelistedDomains, setWhitelistedDomains] = useState(['example.com']);
     const [installationCode, setInstallationCode] = useState('');
+    const { toast } = useToast();
     
     useEffect(() => {
         setInstallationCode(`<script src="https://cdn.chatgenius.com/widget.js" data-widget-id="wg_12345" async></script>`);
@@ -264,5 +265,3 @@ export default function WidgetsPage() {
     </div>
   );
 }
-
-    
