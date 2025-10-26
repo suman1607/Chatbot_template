@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React from 'react';
@@ -43,11 +42,6 @@ const conversationsData = [
             { sender: "customer", text: "Let's go with semi-illustrative. Also, add some small birds in the sky.", time: "15:10", avatar: "https://picsum.photos/seed/1/32/32" },
             { sender: "ai", text: "Got it! I'll create an image with mountains in the morning, fog covering the landscape, an orange sky, and small birds flying in the distance, in a semi-illustrative style.", time: "15:11", avatar: "https://picsum.photos/seed/ai/32/32" },
         ],
-        customer: {
-            name: "Sunday AI",
-            description: "Chat with smartest AI - Experience the power of AI with us",
-            avatar: "https://picsum.photos/seed/ai/40/40"
-        },
     },
     { 
         id: 2, 
@@ -60,11 +54,6 @@ const conversationsData = [
             { type: "divider", text: "Yesterday 10:30" },
             { sender: "customer", text: "Hey, I have a question about my recent order.", time: "10:30", avatar: "https://picsum.photos/seed/2/32/32" },
         ],
-        customer: {
-            name: "Sunday AI",
-            description: "Chat with smartest AI - Experience the power of AI with us",
-            avatar: "https://picsum.photos/seed/ai/40/40"
-        },
     },
     { 
         id: 3, 
@@ -74,11 +63,6 @@ const conversationsData = [
         time: "09:30 AM", 
         unread: 0,
         messages: [],
-        customer: {
-            name: "Sunday AI",
-            description: "Chat with smartest AI - Experience the power of AI with us",
-            avatar: "https://picsum.photos/seed/ai/40/40"
-        },
     },
     { 
         id: 4, 
@@ -91,11 +75,6 @@ const conversationsData = [
             { type: "divider", text: "Today 09:45" },
             { sender: "customer", text: "Do you have a minute to talk? I've been having some trouble with the setup.", time: "09:45", avatar: "https://picsum.photos/seed/4/32/32" },
         ],
-        customer: {
-            name: "Sunday AI",
-            description: "Chat with smartest AI - Experience the power of AI with us",
-            avatar: "https://picsum.photos/seed/ai/40/40"
-        },
     },
     { 
         id: 5, 
@@ -105,11 +84,6 @@ const conversationsData = [
         time: "10:35 AM", 
         unread: 5,
         messages: [],
-        customer: {
-            name: "Sunday AI",
-            description: "Chat with smartest AI - Experience the power of AI with us",
-            avatar: "https://picsum.photos/seed/ai/40/40"
-        },
     },
     { 
         id: 6, 
@@ -119,11 +93,6 @@ const conversationsData = [
         time: "12:30 PM", 
         unread: 0,
         messages: [],
-        customer: {
-            name: "Sunday AI",
-            description: "Chat with smartest AI - Experience the power of AI with us",
-            avatar: "https://picsum.photos/seed/ai/40/40"
-        },
     },
     { 
         id: 7, 
@@ -133,11 +102,6 @@ const conversationsData = [
         time: "01:00 PM", 
         unread: 0,
         messages: [],
-        customer: {
-            name: "Sunday AI",
-            description: "Chat with smartest AI - Experience the power of AI with us",
-            avatar: "https://picsum.photos/seed/ai/40/40"
-        },
     },
     { 
         id: 8, 
@@ -147,11 +111,6 @@ const conversationsData = [
         time: "01:15 PM", 
         unread: 8,
         messages: [],
-        customer: {
-            name: "Sunday AI",
-            description: "Chat with smartest AI - Experience the power of AI with us",
-            avatar: "https://picsum.photos/seed/ai/40/40"
-        },
     },
 ];
 
@@ -195,23 +154,18 @@ export default function ConversationsPage() {
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-xl font-bold">Messages</h2>
                         <div className="flex items-center gap-2">
-                            {isSearchVisible ? (
-                                <div className="relative w-full max-w-xs">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                    <Input 
-                                        placeholder="Search..." 
-                                        className="pl-10"
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                        onBlur={() => setIsSearchVisible(false)}
-                                        autoFocus
-                                    />
-                                </div>
-                            ) : (
-                                <Button variant="ghost" size="icon" onClick={() => setIsSearchVisible(true)}>
+                           <div className="relative flex items-center">
+                                <Input
+                                    placeholder="Search..."
+                                    className={`pl-10 transition-all duration-300 ease-in-out ${isSearchVisible ? 'w-48 opacity-100' : 'w-0 opacity-0'}`}
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    onBlur={() => { if(!searchQuery) setIsSearchVisible(false) }}
+                                />
+                                <Button variant="ghost" size="icon" onClick={() => setIsSearchVisible(true)} className="absolute right-0">
                                     <Search className="w-5 h-5 text-gray-500" />
                                 </Button>
-                            )}
+                            </div>
                         </div>
                     </div>
                     <div className="flex items-center gap-4 text-sm text-gray-500">
