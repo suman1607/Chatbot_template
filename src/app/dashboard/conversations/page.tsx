@@ -27,31 +27,132 @@ import {
 import { Separator } from '@/components/ui/separator';
 
 const conversationsData = [
-    { id: 1, name: "Anna Johnson", avatar: "https://picsum.photos/seed/1/40/40", lastMessage: "Hey! How's it going today? I've been...", time: "09:15 AM", unread: 4, active: true },
-    { id: 2, name: "Brian Carter", avatar: "https://picsum.photos/seed/2/40/40", lastMessage: "Can you help me figure this out? I've bee...", time: "09:22 AM", unread: 0 },
-    { id: 3, name: "Clara Smith", avatar: "https://picsum.photos/seed/3/40/40", lastMessage: "OMG, you won't believe what just hap...", time: "09:30 AM", unread: 0 },
-    { id: 4, name: "David Brown", avatar: "https://picsum.photos/seed/4/40/40", lastMessage: "Do you have a minute to talk? I've be...", time: "09:45 AM", unread: 1 },
-    { id: 5, name: "Henry Moore", avatar: "https://picsum.photos/seed/5/40/40", lastMessage: "Just checking in—how's everything...", time: "10:35 AM", unread: 5 },
-    { id: 6, name: "Isabella Taylor", avatar: "https://picsum.photos/seed/6/40/40", lastMessage: "Hey! How's it going today? I've been thin...", time: "12:30 PM", unread: 0 },
-    { id: 7, name: "Rachel Carter", avatar: "https://picsum.photos/seed/7/40/40", lastMessage: "Can you double-check this for me? I wan...", time: "01:00 PM", unread: 0 },
-    { id: 8, name: "Steve Evans", avatar: "https://picsum.photos/seed/8/40/40", lastMessage: "I've been meaning to ask—how's the...", time: "01:15 PM", unread: 8 },
-];
-
-const selectedConversationDetails = {
-    id: 1,
-    customer: {
-        name: "Sunday AI",
-        description: "Chat with smartest AI - Experience the power of AI with us",
-        avatar: "https://picsum.photos/seed/ai/40/40"
+    { 
+        id: 1, 
+        name: "Anna Johnson", 
+        avatar: "https://picsum.photos/seed/1/40/40", 
+        lastMessage: "Hey! How's it going today? I've been...", 
+        time: "09:15 AM", 
+        unread: 4, 
+        active: true,
+        messages: [
+            { type: "divider", text: "Today 15:08" },
+            { sender: "customer", text: "Hi Sunday AI, I want to create an image of \"mountains in the morning with fog.\" Can you help?", time: "15:08", avatar: "https://picsum.photos/seed/1/32/32" },
+            { sender: "ai", text: "Of course! Here's the concept I'll use:\n\n- Theme: Mountains in the morning.\n- Details: Fog covering the slopes, an orange-golden sky, and lush green trees.\n- Style: Realistic or semi-illustrative?\n\nDo you have any additional preferences?", time: "15:09", avatar: "https://picsum.photos/seed/ai/32/32" },
+            { sender: "customer", text: "Let's go with semi-illustrative. Also, add some small birds in the sky.", time: "15:10", avatar: "https://picsum.photos/seed/1/32/32" },
+            { sender: "ai", text: "Got it! I'll create an image with mountains in the morning, fog covering the landscape, an orange sky, and small birds flying in the distance, in a semi-illustrative style.", time: "15:11", avatar: "https://picsum.photos/seed/ai/32/32" },
+        ],
+        customer: {
+            name: "Sunday AI",
+            description: "Chat with smartest AI - Experience the power of AI with us",
+            avatar: "https://picsum.photos/seed/ai/40/40"
+        },
     },
-    messages: [
-        { type: "divider", text: "Today 15:08" },
-        { sender: "customer", text: "Hi Sunday AI, I want to create an image of \"mountains in the morning with fog.\" Can you help?", time: "15:08", avatar: "https://picsum.photos/seed/1/32/32" },
-        { sender: "ai", text: "Of course! Here's the concept I'll use:\n\n- Theme: Mountains in the morning.\n- Details: Fog covering the slopes, an orange-golden sky, and lush green trees.\n- Style: Realistic or semi-illustrative?\n\nDo you have any additional preferences?", time: "15:09", avatar: "https://picsum.photos/seed/ai/32/32" },
-        { sender: "customer", text: "Let's go with semi-illustrative. Also, add some small birds in the sky.", time: "15:10", avatar: "https://picsum.photos/seed/1/32/32" },
-        { sender: "ai", text: "Got it! I'll create an image with mountains in the morning, fog covering the landscape, an orange sky, and small birds flying in the distance, in a semi-illustrative style.", time: "15:11", avatar: "https://picsum.photos/seed/ai/32/32" },
-    ]
-};
+    { 
+        id: 2, 
+        name: "Brian Carter", 
+        avatar: "https://picsum.photos/seed/2/40/40", 
+        lastMessage: "Can you help me figure this out? I've bee...", 
+        time: "09:22 AM", 
+        unread: 0,
+        messages: [
+            { type: "divider", text: "Yesterday 10:30" },
+            { sender: "customer", text: "Hey, I have a question about my recent order.", time: "10:30", avatar: "https://picsum.photos/seed/2/32/32" },
+        ],
+        customer: {
+            name: "Sunday AI",
+            description: "Chat with smartest AI - Experience the power of AI with us",
+            avatar: "https://picsum.photos/seed/ai/40/40"
+        },
+    },
+    { 
+        id: 3, 
+        name: "Clara Smith", 
+        avatar: "https://picsum.photos/seed/3/40/40", 
+        lastMessage: "OMG, you won't believe what just hap...", 
+        time: "09:30 AM", 
+        unread: 0,
+        messages: [],
+        customer: {
+            name: "Sunday AI",
+            description: "Chat with smartest AI - Experience the power of AI with us",
+            avatar: "https://picsum.photos/seed/ai/40/40"
+        },
+    },
+    { 
+        id: 4, 
+        name: "David Brown", 
+        avatar: "https://picsum.photos/seed/4/40/40", 
+        lastMessage: "Do you have a minute to talk? I've be...", 
+        time: "09:45 AM", 
+        unread: 1,
+        messages: [
+            { type: "divider", text: "Today 09:45" },
+            { sender: "customer", text: "Do you have a minute to talk? I've been having some trouble with the setup.", time: "09:45", avatar: "https://picsum.photos/seed/4/32/32" },
+        ],
+        customer: {
+            name: "Sunday AI",
+            description: "Chat with smartest AI - Experience the power of AI with us",
+            avatar: "https://picsum.photos/seed/ai/40/40"
+        },
+    },
+    { 
+        id: 5, 
+        name: "Henry Moore", 
+        avatar: "https://picsum.photos/seed/5/40/40", 
+        lastMessage: "Just checking in—how's everything...", 
+        time: "10:35 AM", 
+        unread: 5,
+        messages: [],
+        customer: {
+            name: "Sunday AI",
+            description: "Chat with smartest AI - Experience the power of AI with us",
+            avatar: "https://picsum.photos/seed/ai/40/40"
+        },
+    },
+    { 
+        id: 6, 
+        name: "Isabella Taylor", 
+        avatar: "https://picsum.photos/seed/6/40/40", 
+        lastMessage: "Hey! How's it going today? I've been thin...", 
+        time: "12:30 PM", 
+        unread: 0,
+        messages: [],
+        customer: {
+            name: "Sunday AI",
+            description: "Chat with smartest AI - Experience the power of AI with us",
+            avatar: "https://picsum.photos/seed/ai/40/40"
+        },
+    },
+    { 
+        id: 7, 
+        name: "Rachel Carter", 
+        avatar: "https://picsum.photos/seed/7/40/40", 
+        lastMessage: "Can you double-check this for me? I wan...", 
+        time: "01:00 PM", 
+        unread: 0,
+        messages: [],
+        customer: {
+            name: "Sunday AI",
+            description: "Chat with smartest AI - Experience the power of AI with us",
+            avatar: "https://picsum.photos/seed/ai/40/40"
+        },
+    },
+    { 
+        id: 8, 
+        name: "Steve Evans", 
+        avatar: "https://picsum.photos/seed/8/40/40", 
+        lastMessage: "I've been meaning to ask—how's the...", 
+        time: "01:15 PM", 
+        unread: 8,
+        messages: [],
+        customer: {
+            name: "Sunday AI",
+            description: "Chat with smartest AI - Experience the power of AI with us",
+            avatar: "https://picsum.photos/seed/ai/40/40"
+        },
+    },
+];
 
 
 const SparkleIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -142,8 +243,8 @@ export default function ConversationsPage() {
                         <div className="flex items-center justify-between p-4 border-b bg-white rounded-tr-xl">
                             <div className="flex items-center gap-3">
                                 <div>
-                                    <p className="font-bold text-lg">{selectedConversationDetails.customer.name}</p>
-                                    <p className="text-sm text-gray-500">{selectedConversationDetails.customer.description}</p>
+                                    <p className="font-bold text-lg">{selectedConversation.customer.name}</p>
+                                    <p className="text-sm text-gray-500">{selectedConversation.customer.description}</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
@@ -158,7 +259,7 @@ export default function ConversationsPage() {
 
                         {/* Chat View */}
                         <div className="flex-grow overflow-y-auto p-6 space-y-6">
-                            {selectedConversationDetails.messages.map((msg, index) => (
+                            {selectedConversation.messages.map((msg, index) => (
                                 <div key={index}>
                                     {msg.type === 'divider' ? (
                                         <div className="text-center text-xs text-gray-400 my-4">{msg.text}</div>
