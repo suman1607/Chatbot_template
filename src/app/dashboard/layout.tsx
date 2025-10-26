@@ -22,18 +22,14 @@ import {
   Users,
   LayoutTemplate,
   BarChart2,
-  CreditCard,
   Settings,
   LifeBuoy,
-  LogOut,
   User as UserIcon,
-  MoreVertical,
 } from 'lucide-react';
-import { useAuth, useUser } from '@/firebase';
+import { useUser } from '@/firebase';
 import { usePathname, useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { getAuth, signOut } from 'firebase/auth';
+import { LogoutButton } from '@/components/auth/logout-button';
 
 const menuGroups = [
     {
@@ -81,11 +77,6 @@ export default function DashboardLayout({
     router.push('/');
     return null;
   }
-
-  const handleLogout = () => {
-    const auth = getAuth();
-    signOut(auth);
-  };
 
   return (
     <SidebarProvider>
@@ -136,9 +127,12 @@ export default function DashboardLayout({
                     <p className="text-sm font-semibold truncate">{user.displayName ?? user.email}</p>
                     <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                 </div>
-                <Button variant="ghost" size="icon" onClick={handleLogout} className="text-muted-foreground hover:text-foreground shrink-0 group-data-[collapsible=icon]:hidden">
-                    <LogOut size={18} />
-                </Button>
+                 <div className="group-data-[collapsible=icon]:hidden">
+                    <LogoutButton />
+                </div>
+            </div>
+             <div className="hidden group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
+                <LogoutButton />
             </div>
         </SidebarFooter>
       </Sidebar>
