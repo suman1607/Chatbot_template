@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useUser } from '@/firebase';
@@ -233,27 +234,29 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2 h-[350px] flex flex-col">
+        <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Conversation Analytics</CardTitle>
             <CardDescription>Conversations per day (last 30 days)</CardDescription>
           </CardHeader>
-          <CardContent className="flex-1">
-            <ChartContainer config={areaChartConfig} className="w-full h-full">
-              <AreaChart data={areaChartData} margin={{ top: 5, right: 10, left: -30, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <ChartTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent indicator="dot" />}
-                />
-                <Area type="monotone" dataKey="desktop" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorUv)" />
-              </AreaChart>
-            </ChartContainer>
+          <CardContent className="pb-4">
+            <div className="h-[200px]">
+                <ChartContainer config={areaChartConfig} className="w-full h-full">
+                <AreaChart data={areaChartData} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
+                    <defs>
+                    <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                    </linearGradient>
+                    </defs>
+                    <ChartTooltip
+                    cursor={false}
+                    content={<ChartTooltipContent indicator="dot" />}
+                    />
+                    <Area type="monotone" dataKey="desktop" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorUv)" />
+                </AreaChart>
+                </ChartContainer>
+            </div>
           </CardContent>
         </Card>
         <Card className="h-[350px] flex flex-col">
@@ -311,4 +314,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
