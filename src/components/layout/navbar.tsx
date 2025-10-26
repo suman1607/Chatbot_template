@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -77,27 +78,27 @@ export function Navbar() {
                 <span className="sr-only">Open Menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[300px]">
-              <SheetTitle className="sr-only">Mobile Navigation Menu</SheetTitle>
-              <div className="p-6">
-                  <div className="mb-8">
-                      <Logo />
-                  </div>
-                  <nav className="flex flex-col space-y-6">
-                    {menuItems.map((item) => (
-                      <Link
-                        key={item.name}
-                        href={item.href}
-                        className="text-lg font-medium text-foreground hover:text-primary"
-                      >
-                        {item.name}
-                      </Link>
-                    ))}
-                  </nav>
-                  <div className="mt-8 flex flex-col space-y-3 border-t pt-6">
-                      <GetStartedButton />
-                  </div>
-              </div>
+            <SheetContent side="left" className="w-[300px] p-0">
+                <SheetTitle className="sr-only">Mobile Navigation Menu</SheetTitle>
+                <div className="p-6">
+                    <div className="mb-8">
+                        <Logo />
+                    </div>
+                    <nav className="flex flex-col space-y-6">
+                      {menuItems.map((item) => (
+                        <Link
+                          key={item.name}
+                          href={item.href}
+                          className="text-lg font-medium text-foreground hover:text-primary"
+                        >
+                          {item.name}
+                        </Link>
+                      ))}
+                    </nav>
+                    <div className="mt-8 flex flex-col space-y-3 border-t pt-6">
+                        <GetStartedButton />
+                    </div>
+                </div>
             </SheetContent>
           </Sheet>
         )}
