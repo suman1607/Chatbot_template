@@ -1,7 +1,7 @@
 
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Avatar,
   AvatarFallback,
@@ -55,27 +55,89 @@ import {
   Frown,
   TrendingUp,
 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 
-const conversationVolumeData = [
-  { name: 'Jan', conversations: 420 },
-  { name: 'Feb', conversations: 480 },
-  { name: 'Mar', conversations: 550 },
-  { name: 'Apr', conversations: 520 },
-  { name: 'May', conversations: 600 },
-  { name: 'Jun', conversations: 680 },
-  { name: 'Jul', conversations: 710 },
-  { name: 'Aug', conversations: 650 },
-  { name: 'Sep', conversations: 750 },
-  { name: 'Oct', conversations: 820 },
-  { name: 'Nov', conversations: 900 },
-  { name: 'Dec', conversations: 850 },
-];
-
-const aiPerformanceData = [
-  { name: 'Resolved by AI', value: 75, color: '#10B981' },
-  { name: 'Handed to Agent', value: 25, color: '#F97316' },
-];
+const allData: { [key: string]: any } = {
+    'Last 24 hours': {
+        stats: {
+            conversations: { value: '452', change: '+5%' },
+            aiResolution: { value: '78%', change: '+1.2%' },
+            avgResponse: { value: '1m 30s', change: '-10s' },
+        },
+        conversationVolume: [
+            { name: '00:00', conversations: 15 }, { name: '02:00', conversations: 20 }, { name: '04:00', conversations: 18 },
+            { name: '06:00', conversations: 25 }, { name: '08:00', conversations: 40 }, { name: '10:00', conversations: 55 },
+            { name: '12:00', conversations: 60 }, { name: '14:00', conversations: 58 }, { name: '16:00', conversations: 62 },
+            { name: '18:00', conversations: 50 }, { name: '20:00', conversations: 45 }, { name: '22:00', conversations: 30 },
+        ],
+        aiPerformance: [
+            { name: 'Resolved by AI', value: 78, color: '#10B981' },
+            { name: 'Handed to Agent', value: 22, color: '#F97316' },
+        ],
+    },
+    'Last 7 days': {
+        stats: {
+            conversations: { value: '3,150', change: '+9%' },
+            aiResolution: { value: '76%', change: '+2.5%' },
+            avgResponse: { value: '2m 15s', change: '-12s' },
+        },
+        conversationVolume: [
+            { name: 'Mon', conversations: 420 }, { name: 'Tue', conversations: 480 }, { name: 'Wed', conversations: 550 },
+            { name: 'Thu', conversations: 520 }, { name: 'Fri', conversations: 600 }, { name: 'Sat', conversations: 680 },
+            { name: 'Sun', conversations: 710 },
+        ],
+        aiPerformance: [
+            { name: 'Resolved by AI', value: 76, color: '#10B981' },
+            { name: 'Handed to Agent', value: 24, color: '#F97316' },
+        ],
+    },
+    'Last 30 days': {
+        stats: {
+            conversations: { value: '12,430', change: '+12%' },
+            aiResolution: { value: '74%', change: '+5.2%' },
+            avgResponse: { value: '2m 45s', change: '-15s' },
+        },
+        conversationVolume: [
+            { name: 'Week 1', conversations: 2800 }, { name: 'Week 2', conversations: 3100 },
+            { name: 'Week 3', conversations: 3500 }, { name: 'Week 4', conversations: 3030 },
+        ],
+        aiPerformance: [
+            { name: 'Resolved by AI', value: 74, color: '#10B981' },
+            { name: 'Handed to Agent', value: 26, color: '#F97316' },
+        ],
+    },
+    'Last 90 days': {
+        stats: {
+            conversations: { value: '38,900', change: '+15%' },
+            aiResolution: { value: '72%', change: '+4.8%' },
+            avgResponse: { value: '3m 05s', change: '-20s' },
+        },
+        conversationVolume: [
+            { name: 'Month 1', conversations: 12430 }, { name: 'Month 2', conversations: 13500 },
+            { name: 'Month 3', conversations: 12970 },
+        ],
+        aiPerformance: [
+            { name: 'Resolved by AI', value: 72, color: '#10B981' },
+            { name: 'Handed to Agent', value: 28, color: '#F97316' },
+        ],
+    },
+    'All time': {
+        stats: {
+            conversations: { value: '150,000', change: '' },
+            aiResolution: { value: '70%', change: '' },
+            avgResponse: { value: '3m 30s', change: '' },
+        },
+        conversationVolume: [
+          { name: 'Jan', conversations: 10420 }, { name: 'Feb', conversations: 11480 }, { name: 'Mar', conversations: 12550 }, 
+          { name: 'Apr', conversations: 13520 }, { name: 'May', conversations: 14600 }, { name: 'Jun', conversations: 15680 }, 
+          { name: 'Jul', conversations: 16710 }, { name: 'Aug', conversations: 15650 }, { name: 'Sep', conversations: 16750 }, 
+          { name: 'Oct', conversations: 17820 }, { name: 'Nov', conversations: 18900 }, { name: 'Dec', conversations: 18850 },
+        ],
+        aiPerformance: [
+            { name: 'Resolved by AI', value: 70, color: '#10B981' },
+            { name: 'Handed to Agent', value: 30, color: '#F97316' },
+        ],
+    }
+};
 
 const agentLeaderboard = [
     { name: 'Sarah Miller', avatar: 'https://picsum.photos/seed/sm/40/40', chats: 128, avgResponse: '2m 15s', csat: '4.9/5' },
@@ -98,9 +160,11 @@ const StatsCard = ({ title, value, change, icon, timeframe, description }: { tit
                     <div className="p-2.5 bg-gray-100 rounded-lg">{icon}</div>
                     <CardTitle className="text-base font-semibold">{title}</CardTitle>
                 </div>
-                <div className="text-sm font-semibold flex items-center gap-1 text-green-600">
-                    <TrendingUp className="w-4 h-4"/> {change}
-                </div>
+                {change && (
+                  <div className="text-sm font-semibold flex items-center gap-1 text-green-600">
+                      <TrendingUp className="w-4 h-4"/> {change}
+                  </div>
+                )}
             </div>
         </CardHeader>
         <CardContent>
@@ -112,7 +176,12 @@ const StatsCard = ({ title, value, change, icon, timeframe, description }: { tit
 
 
 export default function AnalyticsPage() {
-    const [timeRange, setTimeRange] = React.useState('Last 30 days');
+    const [timeRange, setTimeRange] = useState('Last 30 days');
+    const [currentData, setCurrentData] = useState(allData[timeRange]);
+
+    useEffect(() => {
+        setCurrentData(allData[timeRange]);
+    }, [timeRange]);
 
     return (
         <div className="space-y-6">
@@ -138,20 +207,20 @@ export default function AnalyticsPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <StatsCard title="Total Conversations" value="12,430" change="+12%" icon={<MessageSquare className="w-6 h-6 text-primary" />} timeframe="Last 30 days" description="Compared to last month" />
-                <StatsCard title="AI Resolution Rate" value="74%" change="+5.2%" icon={<Bot className="w-6 h-6 text-primary" />} timeframe="Last 30 days" description="AI-handled vs. total chats" />
-                <StatsCard title="Avg. Response Time" value="2m 45s" change="-15s" icon={<Clock className="w-6 h-6 text-primary" />} timeframe="Last 30 days" description="First response to customers" />
+                <StatsCard title="Total Conversations" value={currentData.stats.conversations.value} change={currentData.stats.conversations.change} icon={<MessageSquare className="w-6 h-6 text-primary" />} timeframe={timeRange} description={`Compared to previous period`} />
+                <StatsCard title="AI Resolution Rate" value={currentData.stats.aiResolution.value} change={currentData.stats.aiResolution.change} icon={<Bot className="w-6 h-6 text-primary" />} timeframe={timeRange} description="AI-handled vs. total chats" />
+                <StatsCard title="Avg. Response Time" value={currentData.stats.avgResponse.value} change={currentData.stats.avgResponse.change} icon={<Clock className="w-6 h-6 text-primary" />} timeframe={timeRange} description="First response to customers" />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <Card className="lg:col-span-2 shadow-sm">
                     <CardHeader>
                         <CardTitle>Conversation Volume</CardTitle>
-                        <CardDescription>Total chats handled per month</CardDescription>
+                        <CardDescription>Total chats handled</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <ResponsiveContainer width="100%" height={300}>
-                            <AreaChart data={conversationVolumeData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                            <AreaChart data={currentData.conversationVolume} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                                 <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
                                 <YAxis fontSize={12} tickLine={false} axisLine={false} />
@@ -191,7 +260,7 @@ export default function AnalyticsPage() {
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
                                     <Pie
-                                        data={aiPerformanceData}
+                                        data={currentData.aiPerformance}
                                         cx="50%"
                                         cy="50%"
                                         innerRadius={60}
@@ -201,14 +270,14 @@ export default function AnalyticsPage() {
                                         startAngle={90}
                                         endAngle={450}
                                     >
-                                        {aiPerformanceData.map((entry, index) => (
+                                        {currentData.aiPerformance.map((entry: any, index: number) => (
                                             <Cell key={`cell-${index}`} fill={entry.color} stroke={entry.color} />
                                         ))}
                                     </Pie>
                                 </PieChart>
                             </ResponsiveContainer>
                             <div className="absolute inset-0 flex items-center justify-center flex-col">
-                                <p className="text-3xl font-bold">75%</p>
+                                <p className="text-3xl font-bold">{currentData.aiPerformance[0].value}%</p>
                                 <p className="text-sm text-gray-500">Resolved by AI</p>
                             </div>
                         </div>
@@ -292,4 +361,5 @@ export default function AnalyticsPage() {
             </div>
         </div>
     );
-}
+
+    
