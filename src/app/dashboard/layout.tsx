@@ -116,23 +116,22 @@ export default function DashboardLayout({
                 ))}
             </SidebarMenu>
             <SidebarSeparator />
-            <div className="flex items-center gap-3 p-2 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:justify-center">
-                <Avatar className="w-9 h-9">
-                    <AvatarImage src={user.photoURL ?? ''} alt="User avatar" />
-                    <AvatarFallback>
-                        <UserIcon />
-                    </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 overflow-hidden group-data-[collapsible=icon]:hidden">
-                    <p className="text-sm font-semibold truncate">{user.displayName ?? user.email}</p>
-                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+            <div className="flex flex-col items-center gap-3 p-2 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:justify-center">
+                <div className="flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center">
+                    <Avatar className="w-9 h-9">
+                        <AvatarImage src={user.photoURL ?? ''} alt="User avatar" />
+                        <AvatarFallback>
+                            <UserIcon />
+                        </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 overflow-hidden group-data-[collapsible=icon]:hidden">
+                        <p className="text-sm font-semibold truncate">{user.displayName ?? user.email}</p>
+                        <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                    </div>
                 </div>
-                 <div className="group-data-[collapsible=icon]:hidden">
+                <div className="w-full">
                     <LogoutButton />
                 </div>
-            </div>
-             <div className="hidden group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
-                <LogoutButton />
             </div>
         </SidebarFooter>
       </Sidebar>
