@@ -4,10 +4,11 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import { useAuth } from "@/firebase";
+import { useAuth, useUser } from "@/firebase";
 import { initiateEmailSignUp, initiateEmailSignIn } from "@/firebase/non-blocking-login";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 
 const GoogleIcon = () => (
@@ -36,23 +37,36 @@ type AuthFormProps = {
 
 export function AuthForm({ isLogin, onToggle, onSuccess }: AuthFormProps) {
   const auth = useAuth();
+  const { user } = useUser();
+  const router = useRouter();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (user && isSubmitting) {
+      toast({ title: isLogin ? 'Signed in successfully' : 'Signed up successfully' });
+      onSuccess();
+      router.push('/dashboard');
+      setIsSubmitting(false);
+    }
+  }, [user, isSubmitting, isLogin, onSuccess, router, toast]);
+
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
         if(isLogin) {
             initiateEmailSignIn(auth, email, password);
         } else {
             initiateEmailSignUp(auth, email, password);
         }
-        onSuccess();
-        toast({ title: isLogin ? 'Signed in successfully' : 'Signed up successfully' });
     } catch (error: any) {
         toast({ variant: 'destructive', title: 'Error', description: error.message });
+        setIsSubmitting(false);
     }
   };
 
@@ -73,8 +87,8 @@ export function AuthForm({ isLogin, onToggle, onSuccess }: AuthFormProps) {
             </Link>
         )}
         
-        <Button type="submit" className="mt-5 block h-auto w-full rounded-2xl border-none bg-gradient-to-r from-blue-600 to-cyan-500 p-4 font-bold text-white shadow-[0px_20px_10px_-15px_rgba(133,189,215,0.88)] transition-all duration-200 ease-in-out hover:scale-105 hover:shadow-[0px_23px_10px_-20px_rgba(133,189,215,0.88)] active:scale-95 active:shadow-[0px_15px_10px_-10px_rgba(133,189,215,0.88)]">
-            {isLogin ? "Sign In" : "Sign Up"}
+        <Button type="submit" className="mt-5 block h-auto w-full rounded-2xl border-none bg-gradient-to-r from-blue-600 to-cyan-500 p-4 font-bold text-white shadow-[0px_20px_10px_-15px_rgba(133,189,215,0.88)] transition-all duration-200 ease-in-out hover:scale-105 hover:shadow-[0px_23px_10px_-20px_rgba(133,189,215,0.88)] active:scale-95 active:shadow-[0px_15px_10px_-10px_rgba(133,189,215,0.88)]" disabled={isSubmitting}>
+            {isSubmitting ? 'Processing...' : (isLogin ? "Sign In" : "Sign Up")}
         </Button>
       </form>
       
