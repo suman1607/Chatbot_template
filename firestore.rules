@@ -1,0 +1,341 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Secure the `/users/{userId}` collection, allowing only the authenticated user to read and write their own data.
+     * @path /users/{userId}
+     * @allow (get, create, update, delete, list) if request.auth.uid == userId
+     * @deny (get, create, update, delete, list) if request.auth.uid != userId
+     * @principle Enforces document ownership, restricting access to a user's own data.
+     */
+    match /users/{userId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+
+      allow get: if isOwner(userId);
+      allow list: if false;
+
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isSignedIn() && isOwner(userId);
+      allow delete: if isSignedIn() && isOwner(userId);
+    }
+
+    /**
+     * @description Secure the `/creators/{creatorId}` collection, allowing only the authenticated user to read and write their own data.
+     * @path /creators/{creatorId}
+     * @allow (get, create, update, delete, list) if request.auth.uid == creatorId
+     * @deny (get, create, update, delete, list) if request.auth.uid != creatorId
+     * @principle Enforces document ownership, restricting access to a user's own data.
+     */
+    match /creators/{creatorId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(creatorId) {
+        return request.auth.uid == creatorId;
+      }
+
+      allow get: if isOwner(creatorId);
+      allow list: if false;
+
+      allow create: if isSignedIn() && isOwner(creatorId);
+      allow update: if isSignedIn() && isOwner(creatorId);
+      allow delete: if isSignedIn() && isOwner(creatorId);
+    }
+
+    /**
+     * @description Secure the `/creators/{creatorId}/dashboard` collection, allowing only the creator to read and write their own dashboard data.
+     * @path /creators/{creatorId}/dashboard
+     * @allow (get, create, update, delete, list) if request.auth.uid == creatorId
+     * @deny (get, create, update, delete, list) if request.auth.uid != creatorId
+     * @principle Enforces document ownership, restricting access to a creator's own dashboard.
+     */
+    match /creators/{creatorId}/dashboard/{dashboardId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(creatorId) {
+        return request.auth.uid == creatorId;
+      }
+
+      allow get: if isOwner(creatorId);
+      allow list: if false;
+
+      allow create: if isSignedIn() && request.auth.uid == creatorId;
+      allow update: if isSignedIn() && isOwner(creatorId);
+      allow delete: if isSignedIn() && isOwner(creatorId);
+    }
+
+    /**
+     * @description Secure the `/creators/{creatorId}/conversations/{conversationId}` collection, allowing only the creator to read and write their own conversation data.
+     * @path /creators/{creatorId}/conversations/{conversationId}
+     * @allow (get, create, update, delete, list) if request.auth.uid == creatorId
+     * @deny (get, create, update, delete, list) if request.auth.uid != creatorId
+     * @principle Enforces document ownership, restricting access to a creator's own conversation.
+     */
+    match /creators/{creatorId}/conversations/{conversationId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(creatorId) {
+        return request.auth.uid == creatorId;
+      }
+
+      allow get: if isOwner(creatorId);
+      allow list: if false;
+
+      allow create: if isSignedIn() && request.auth.uid == creatorId;
+      allow update: if isSignedIn() && isOwner(creatorId);
+      allow delete: if isSignedIn() && isOwner(creatorId);
+    }
+
+    /**
+     * @description Secure the `/creators/{creatorId}/ai_training/{aiTrainingId}` collection, allowing only the creator to read and write their own AI training data.
+     * @path /creators/{creatorId}/ai_training/{aiTrainingId}
+     * @allow (get, create, update, delete, list) if request.auth.uid == creatorId
+     * @deny (get, create, update, delete, list) if request.auth.uid != creatorId
+     * @principle Enforces document ownership, restricting access to a creator's own AI training.
+     */
+    match /creators/{creatorId}/ai_training/{aiTrainingId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(creatorId) {
+        return request.auth.uid == creatorId;
+      }
+
+      allow get: if isOwner(creatorId);
+      allow list: if false;
+
+      allow create: if isSignedIn() && request.auth.uid == creatorId;
+      allow update: if isSignedIn() && isOwner(creatorId);
+      allow delete: if isSignedIn() && isOwner(creatorId);
+    }
+
+    /**
+     * @description Secure the `/creators/{creatorId}/ai_training/{aiTrainingId}/articles/{articleId}` collection, allowing only the creator to read and write their own article data.
+     * @path /creators/{creatorId}/ai_training/{aiTrainingId}/articles/{articleId}
+     * @allow (get, create, update, delete, list) if request.auth.uid == creatorId
+     * @deny (get, create, update, delete, list) if request.auth.uid != creatorId
+     * @principle Enforces document ownership, restricting access to a creator's own article.
+     */
+    match /creators/{creatorId}/ai_training/{aiTrainingId}/articles/{articleId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(creatorId) {
+        return request.auth.uid == creatorId;
+      }
+
+      allow get: if isOwner(creatorId);
+      allow list: if false;
+
+      allow create: if isSignedIn() && isOwner(creatorId);
+      allow update: if isSignedIn() && isOwner(creatorId);
+      allow delete: if isSignedIn() && isOwner(creatorId);
+    }
+
+    /**
+     * @description Secure the `/creators/{creatorId}/teams/{teamId}` collection, allowing only the creator to read and write their own team data.
+     * @path /creators/{creatorId}/teams/{teamId}
+     * @allow (get, create, update, delete, list) if request.auth.uid == creatorId
+     * @deny (get, create, update, delete, list) if request.auth.uid != creatorId
+     * @principle Enforces document ownership, restricting access to a creator's own team data.
+     */
+    match /creators/{creatorId}/teams/{teamId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(creatorId) {
+        return request.auth.uid == creatorId;
+      }
+
+      allow get: if isOwner(creatorId);
+      allow list: if false;
+
+      allow create: if isSignedIn() && request.auth.uid == creatorId;
+      allow update: if isSignedIn() && isOwner(creatorId);
+      allow delete: if isSignedIn() && isOwner(creatorId);
+    }
+
+     /**
+     * @description Secure the `/creators/{creatorId}/agents/{agentId}` collection, allowing only the creator to read and write their own agent data.
+     * @path /creators/{creatorId}/agents/{agentId}
+     * @allow (get, create, update, delete, list) if request.auth.uid == creatorId
+     * @deny (get, create, update, delete, list) if request.auth.uid != creatorId
+     * @principle Enforces document ownership, restricting access to a creator's own agent data.
+     */
+    match /creators/{creatorId}/agents/{agentId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(creatorId) {
+        return request.auth.uid == creatorId;
+      }
+
+      allow get: if isOwner(creatorId);
+      allow list: if false;
+
+      allow create: if isSignedIn() && request.auth.uid == creatorId;
+      allow update: if isSignedIn() && isOwner(creatorId);
+      allow delete: if isSignedIn() && isOwner(creatorId);
+    }
+
+    /**
+     * @description Secure the `/creators/{creatorId}/widgets/{widgetId}` collection, allowing only the creator to read and write their own widget data.
+     * @path /creators/{creatorId}/widgets/{widgetId}
+     * @allow (get, create, update, delete, list) if request.auth.uid == creatorId
+     * @deny (get, create, update, delete, list) if request.auth.uid != creatorId
+     * @principle Enforces document ownership, restricting access to a creator's own widget data.
+     */
+    match /creators/{creatorId}/widgets/{widgetId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(creatorId) {
+        return request.auth.uid == creatorId;
+      }
+
+      allow get: if isOwner(creatorId);
+      allow list: if false;
+
+      allow create: if isSignedIn() && request.auth.uid == creatorId;
+      allow update: if isSignedIn() && isOwner(creatorId);
+      allow delete: if isSignedIn() && isOwner(creatorId);
+    }
+
+    /**
+     * @description Secure the `/creators/{creatorId}/analytics/{analyticsId}` collection, allowing only the creator to read and write their own analytics data.
+     * @path /creators/{creatorId}/analytics/{analyticsId}
+     * @allow (get, create, update, delete, list) if request.auth.uid == creatorId
+     * @deny (get, create, update, delete, list) if request.auth.uid != creatorId
+     * @principle Enforces document ownership, restricting access to a creator's own analytics data.
+     */
+    match /creators/{creatorId}/analytics/{analyticsId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(creatorId) {
+        return request.auth.uid == creatorId;
+      }
+
+      allow get: if isOwner(creatorId);
+      allow list: if false;
+
+      allow create: if isSignedIn() && request.auth.uid == creatorId;
+      allow update: if isSignedIn() && isOwner(creatorId);
+      allow delete: if isSignedIn() && isOwner(creatorId);
+    }
+
+    /**
+     * @description Secure the `/creators/{creatorId}/billing/{billingId}` collection, allowing only the creator to read and write their own billing data.
+     * @path /creators/{creatorId}/billing/{billingId}
+     * @allow (get, create, update, delete, list) if request.auth.uid == creatorId
+     * @deny (get, create, update, delete, list) if request.auth.uid != creatorId
+     * @principle Enforces document ownership, restricting access to a creator's own billing data.
+     */
+    match /creators/{creatorId}/billing/{billingId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(creatorId) {
+        return request.auth.uid == creatorId;
+      }
+
+      allow get: if isOwner(creatorId);
+      allow list: if false;
+
+      allow create: if isSignedIn() && request.auth.uid == creatorId;
+      allow update: if isSignedIn() && isOwner(creatorId);
+      allow delete: if isSignedIn() && isOwner(creatorId);
+    }
+
+    /**
+     * @description Secure the `/creators/{creatorId}/settings/{settingsId}` collection, allowing only the creator to read and write their own settings data.
+     * @path /creators/{creatorId}/settings/{settingsId}
+     * @allow (get, create, update, delete, list) if request.auth.uid == creatorId
+     * @deny (get, create, update, delete, list) if request.auth.uid != creatorId
+     * @principle Enforces document ownership, restricting access to a creator's own settings data.
+     */
+    match /creators/{creatorId}/settings/{settingsId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(creatorId) {
+        return request.auth.uid == creatorId;
+      }
+
+      allow get: if isOwner(creatorId);
+      allow list: if false;
+
+      allow create: if isSignedIn() && request.auth.uid == creatorId;
+      allow update: if isSignedIn() && isOwner(creatorId);
+      allow delete: if isSignedIn() && isOwner(creatorId);
+    }
+
+    /**
+     * @description Secure the `/creators/{creatorId}/support_tickets/{supportTicketId}` collection, allowing only the creator to read and write their own support ticket data.
+     * @path /creators/{creatorId}/support_tickets/{supportTicketId}
+     * @allow (get, create, update, delete, list) if request.auth.uid == creatorId
+     * @deny (get, create, update, delete, list) if request.auth.uid != creatorId
+     * @principle Enforces document ownership, restricting access to a creator's own support ticket data.
+     */
+    match /creators/{creatorId}/support_tickets/{supportTicketId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(creatorId) {
+        return request.auth.uid == creatorId;
+      }
+
+      allow get: if isOwner(creatorId);
+      allow list: if false;
+
+      allow create: if isSignedIn() && request.auth.uid == creatorId;
+      allow update: if isSignedIn() && isOwner(creatorId);
+      allow delete: if isSignedIn() && isOwner(creatorId);
+    }
+
+    /**
+     * @description Secure the `/creators/{creatorId}/activities/{activityId}` collection, allowing only the creator to read and write their own activity data.
+     * @path /creators/{creatorId}/activities/{activityId}
+     * @allow (get, create, update, delete, list) if request.auth.uid == creatorId
+     * @deny (get, create, update, delete, list) if request.auth.uid != creatorId
+     * @principle Enforces document ownership, restricting access to a creator's own activity data.
+     */
+    match /creators/{creatorId}/activities/{activityId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(creatorId) {
+        return request.auth.uid == creatorId;
+      }
+
+      allow get: if isOwner(creatorId);
+      allow list: if false;
+
+      allow create: if isSignedIn() && request.auth.uid == creatorId;
+      allow update: if isSignedIn() && isOwner(creatorId);
+      allow delete: if isSignedIn() && isOwner(creatorId);
+    }
+  }
+}
