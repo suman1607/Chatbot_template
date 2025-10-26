@@ -24,6 +24,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {
+  Area,
+  AreaChart,
   Bar,
   BarChart,
   CartesianGrid,
@@ -38,101 +40,66 @@ import {
 } from 'recharts';
 import {
   ChevronDown,
-  CircleDollarSign,
-  MoreVertical,
-  Rocket,
-  TrendingUp,
+  MessageSquare,
+  Bot,
+  Clock,
+  Star,
   Users,
+  Smile,
+  Frown,
+  TrendingUp,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
-const barChartData = [
-  { name: 'Jan', hot: 28, warm: 45, crm: 60 },
-  { name: 'Feb', hot: 42, warm: 65, crm: 75 },
-  { name: 'Mar', hot: 55, warm: 30, crm: 85 },
-  { name: 'Apr', hot: 35, warm: 50, crm: 70 },
-  { name: 'May', hot: 60, warm: 40, crm: 90 },
-  { name: 'Jun', hot: 48, warm: 55, crm: 80 },
-  { name: 'Jul', hot: 70, warm: 35, crm: 95 },
-  { name: 'Aug', hot: 58, warm: 62, crm: 88 },
-  { name: 'Sep', hot: 45, warm: 50, crm: 78 },
-  { name: 'Oct', hot: 65, warm: 70, crm: 92 },
-  { name: 'Nov', hot: 75, warm: 45, crm: 98 },
-  { name: 'Dec', hot: 80, warm: 55, crm: 100 },
+const conversationVolumeData = [
+  { name: 'Jan', conversations: 420 },
+  { name: 'Feb', conversations: 480 },
+  { name: 'Mar', conversations: 550 },
+  { name: 'Apr', conversations: 520 },
+  { name: 'May', conversations: 600 },
+  { name: 'Jun', conversations: 680 },
+  { name: 'Jul', conversations: 710 },
+  { name: 'Aug', conversations: 650 },
+  { name: 'Sep', conversations: 750 },
+  { name: 'Oct', conversations: 820 },
+  { name: 'Nov', conversations: 900 },
+  { name: 'Dec', conversations: 850 },
 ];
 
-const pieChartData = [
-  { name: 'Income', value: 400, color: '#F97316' },
-  { name: 'Expand', value: 300, color: '#C4B5FD' },
-  { name: 'Booking', value: 300, color: '#FDE68A' },
-  { name: 'Other', value: 200, color: '#E5E7EB' },
+const aiPerformanceData = [
+  { name: 'Resolved by AI', value: 75, color: '#10B981' },
+  { name: 'Handed to Agent', value: 25, color: '#F97316' },
 ];
 
-const topChannels = [
-    { name: 'Layers', orders: '20k orders', percentage: '20%', icon: <div className="w-8 h-8 rounded-lg bg-purple-500 flex items-center justify-center"><Rocket className="w-5 h-5 text-white" /></div> },
-    { name: 'Quotient', orders: '18k orders', percentage: '18%', icon: <div className="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center"><Users className="w-5 h-5 text-white" /></div> },
-    { name: 'Hourglass', orders: '15k orders', percentage: '15%', icon: <div className="w-8 h-8 rounded-lg bg-cyan-500 flex items-center justify-center"><CircleDollarSign className="w-5 h-5 text-white" /></div> },
-    { name: 'Sisyphus', orders: '12k orders', percentage: '12%', icon: <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center"><TrendingUp className="w-5 h-5 text-white" /></div> },
+const agentLeaderboard = [
+    { name: 'Sarah Miller', avatar: 'https://picsum.photos/seed/sm/40/40', chats: 128, avgResponse: '2m 15s', csat: '4.9/5' },
+    { name: 'David Chen', avatar: 'https://picsum.photos/seed/dc/40/40', chats: 112, avgResponse: '2m 45s', csat: '4.8/5' },
+    { name: 'Maria Garcia', avatar: 'https://picsum.photos/seed/mg/40/40', chats: 98, avgResponse: '3m 02s', csat: '4.8/5' },
+    { name: 'Alex Thompson', avatar: 'https://picsum.photos/seed/at/40/40', chats: 85, avgResponse: '3m 30s', csat: '4.7/5' },
 ];
 
-const recentOrders = [
-  {
-    name: 'Arifbillah',
-    handle: '@adamesy',
-    avatar: 'https://picsum.photos/seed/ab/40/40',
-    device: 'Macbook pro',
-    orderNumber: '#025NMLO',
-    date: 'Jul 21, 2023',
-    status: 'Complete',
-  },
-  {
-    name: 'John Doe',
-    handle: '@johndoe',
-    avatar: 'https://picsum.photos/seed/jd/40/40',
-    device: 'Mobile',
-    orderNumber: '#025NMLP',
-    date: 'Jul 22, 2023',
-    status: 'In process',
-  },
-  {
-    name: 'Jane Smith',
-    handle: '@janesmith',
-    avatar: 'https://picsum.photos/seed/js/40/40',
-    device: 'Windows PC',
-    orderNumber: '#025NMLQ',
-    date: 'Jul 22, 2023',
-    status: 'Complete',
-  },
-   {
-    name: 'Emily White',
-    handle: '@emwhite',
-    avatar: 'https://picsum.photos/seed/ew/40/40',
-    device: 'iPhone 14',
-    orderNumber: '#025NMLR',
-    date: 'Jul 23, 2023',
-    status: 'Canceled',
-  },
+const satisfactionData = [
+    { icon: <Smile className="w-8 h-8 text-green-500" />, title: 'Positive', percentage: '92%', description: '3,280 ratings' },
+    { icon: <Frown className="w-8 h-8 text-red-500" />, title: 'Negative', percentage: '8%', description: '212 ratings' },
 ];
 
-const StatsCard = ({ title, value, percentage, icon, timeframe, description }: { title: string, value: string, percentage: string, icon: React.ReactNode, timeframe: string, description: string }) => (
+
+const StatsCard = ({ title, value, change, icon, timeframe, description }: { title: string, value: string, change: string, icon: React.ReactNode, timeframe: string, description: string }) => (
     <Card className="shadow-sm">
         <CardHeader className="pb-4">
-            <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                    <div className="p-2 bg-gray-100 rounded-lg">{icon}</div>
+            <div className="flex justify-between items-start">
+                <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-gray-100 rounded-lg">{icon}</div>
                     <CardTitle className="text-base font-semibold">{title}</CardTitle>
                 </div>
-                <Button variant="outline" size="sm" className="text-xs h-8">
-                    {timeframe} <ChevronDown className="w-4 h-4 ml-1" />
-                </Button>
+                <div className="text-sm font-semibold flex items-center gap-1 text-green-600">
+                    <TrendingUp className="w-4 h-4"/> {change}
+                </div>
             </div>
         </CardHeader>
         <CardContent>
             <p className="text-3xl font-bold">{value}</p>
-            <div className="flex items-center gap-2 text-sm">
-                <span className="text-green-500 font-semibold">{percentage}</span>
-                <p className="text-gray-500">{description}</p>
-            </div>
+            <p className="text-sm text-gray-500">{description}</p>
         </CardContent>
     </Card>
 );
@@ -141,65 +108,70 @@ const StatsCard = ({ title, value, percentage, icon, timeframe, description }: {
 export default function AnalyticsPage() {
     return (
         <div className="space-y-6">
+             <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-3xl font-bold">Analytics</h1>
+                    <p className="text-muted-foreground">Insights into your support performance and customer engagement.</p>
+                </div>
+                <Button variant="outline" size="sm" className="h-9">
+                    Last 30 days <ChevronDown className="w-4 h-4 ml-2" />
+                </Button>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <StatsCard title="Balance" value="$24,006" percentage="+27.4%" icon={<TrendingUp className="w-5 h-5 text-gray-600" />} timeframe="Last 30 day" description="Average values of won deals" />
-                <StatsCard title="Spending" value="$24,006" percentage="+10.0%" icon={<CircleDollarSign className="w-5 h-5 text-gray-600" />} timeframe="Last 30 day" description="Average values of won deals" />
-                <StatsCard title="Investing" value="$24,006" percentage="+27.4%" icon={<Rocket className="w-5 h-5 text-gray-600" />} timeframe="Last 30 day" description="Average values of won deals" />
+                <StatsCard title="Total Conversations" value="12,430" change="+12%" icon={<MessageSquare className="w-6 h-6 text-primary" />} timeframe="Last 30 days" description="Compared to last month" />
+                <StatsCard title="AI Resolution Rate" value="74%" change="+5.2%" icon={<Bot className="w-6 h-6 text-primary" />} timeframe="Last 30 days" description="AI-handled vs. total chats" />
+                <StatsCard title="Avg. Response Time" value="2m 45s" change="-15s" icon={<Clock className="w-6 h-6 text-primary" />} timeframe="Last 30 days" description="First response to customers" />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <Card className="lg:col-span-2 shadow-sm">
                     <CardHeader>
-                        <div className="flex justify-between items-center">
-                            <CardTitle>CRM Traffic</CardTitle>
-                             <div className="flex items-center gap-4">
-                                <div className="flex items-center gap-2 text-sm"><div className="w-3 h-3 rounded-full bg-orange-500" />Hot lead</div>
-                                <div className="flex items-center gap-2 text-sm"><div className="w-3 h-3 rounded-full bg-purple-300" />Warm lead</div>
-                                <div className="flex items-center gap-2 text-sm"><div className="w-3 h-3 rounded-full bg-amber-200" />CRM Traffic</div>
-                                <Button variant="outline" size="sm" className="h-8">Monthly <ChevronDown className="w-4 h-4 ml-1" /></Button>
-                             </div>
-                        </div>
+                        <CardTitle>Conversation Volume</CardTitle>
+                        <CardDescription>Total chats handled per month</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <ResponsiveContainer width="100%" height={300}>
-                            <BarChart data={barChartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                            <AreaChart data={conversationVolumeData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                                 <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
-                                <YAxis fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `$${value}`} />
+                                <YAxis fontSize={12} tickLine={false} axisLine={false} />
                                 <Tooltip
                                     content={({ active, payload, label }) => {
                                         if (active && payload && payload.length) {
                                         return (
-                                            <div className="bg-black text-white p-3 rounded-lg shadow-lg">
-                                                <p className="font-bold">{`-${payload[0].value}`}</p>
-                                                <p className="font-bold">{`${payload[0].value}`}</p>
+                                            <div className="bg-background border p-3 rounded-lg shadow-lg">
+                                                <p className="font-bold text-lg">{payload[0].value} conversations</p>
+                                                <p className="text-sm text-muted-foreground">{label}</p>
                                             </div>
                                         );
                                         }
                                         return null;
                                     }}
-                                    cursor={{fill: 'rgba(0,0,0,0.05)', radius: 8}}
+                                    cursor={{fill: 'hsla(var(--primary)/0.1)', radius: 8}}
                                 />
-                                <Bar dataKey="hot" fill="#F97316" radius={[8, 8, 0, 0]} barSize={10} />
-                                <Bar dataKey="warm" fill="#C4B5FD" radius={[8, 8, 0, 0]} barSize={10}/>
-                                <Bar dataKey="crm" fill="#FDE68A" radius={[8, 8, 0, 0]} barSize={10}/>
-                            </BarChart>
+                                <defs>
+                                    <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
+                                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                                    </linearGradient>
+                                </defs>
+                                <Area type="monotone" dataKey="conversations" stroke="hsl(var(--primary))" fill="url(#colorUv)" strokeWidth={2} />
+                            </AreaChart>
                         </ResponsiveContainer>
                     </CardContent>
                 </Card>
 
                 <Card className="shadow-sm">
                     <CardHeader>
-                        <div className="flex justify-between items-center">
-                            <CardTitle>CRM Traffic</CardTitle>
-                            <Button variant="outline" size="sm" className="h-8">Week <ChevronDown className="w-4 h-4 ml-1" /></Button>
-                        </div>
+                        <CardTitle>AI Performance</CardTitle>
+                        <CardDescription>Breakdown of AI vs. agent handling</CardDescription>
                     </CardHeader>
                     <CardContent className="flex flex-col items-center justify-center">
                         <ResponsiveContainer width="100%" height={200}>
                             <PieChart>
                                 <Pie
-                                    data={pieChartData}
+                                    data={aiPerformanceData}
                                     cx="50%"
                                     cy="50%"
                                     innerRadius={60}
@@ -207,7 +179,7 @@ export default function AnalyticsPage() {
                                     paddingAngle={2}
                                     dataKey="value"
                                 >
-                                    {pieChartData.map((entry, index) => (
+                                    {aiPerformanceData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={entry.color} stroke={entry.color} />
                                     ))}
                                 </Pie>
@@ -215,101 +187,85 @@ export default function AnalyticsPage() {
                             </PieChart>
                         </ResponsiveContainer>
                         <div className="text-center -mt-20">
-                            <p className="text-3xl font-bold">$24,006</p>
-                            <p className="text-sm text-gray-500">Business Spend</p>
+                            <p className="text-3xl font-bold">75%</p>
+                            <p className="text-sm text-gray-500">Resolved by AI</p>
                         </div>
                         <div className="flex justify-center gap-4 mt-6">
-                            <div className="flex items-center gap-2 text-sm"><div className="w-3 h-3 rounded-full bg-orange-500" />Income</div>
-                            <div className="flex items-center gap-2 text-sm"><div className="w-3 h-3 rounded-full bg-purple-300" />Expand</div>
-                            <div className="flex items-center gap-2 text-sm"><div className="w-3 h-3 rounded-full bg-amber-200" />Booking</div>
+                            <div className="flex items-center gap-2 text-sm"><div className="w-3 h-3 rounded-full bg-green-500" />AI Resolved</div>
+                            <div className="flex items-center gap-2 text-sm"><div className="w-3 h-3 rounded-full bg-orange-500" />Agent Handled</div>
                         </div>
                     </CardContent>
                 </Card>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <Card className="shadow-sm">
+                <Card className="shadow-sm lg:col-span-2">
                     <CardHeader>
-                         <div className="flex justify-between items-center">
-                            <CardTitle className="text-lg">Top seals channel</CardTitle>
-                            <MoreVertical className="w-5 h-5 text-gray-400" />
-                        </div>
-                        <CardDescription>Last 90 days</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                       <div className="space-y-4">
-                           {topChannels.map(channel => (
-                               <div key={channel.name} className="flex items-center">
-                                   {channel.icon}
-                                   <div className="ml-4 flex-grow">
-                                       <p className="font-semibold">{channel.name}</p>
-                                   </div>
-                                   <div className="text-right">
-                                       <p className="font-medium">{channel.orders}</p>
-                                       <p className="text-sm text-gray-500">{channel.percentage}</p>
-                                   </div>
-                               </div>
-                           ))}
-                       </div>
-                    </CardContent>
-                </Card>
-
-                <Card className="lg:col-span-2 shadow-sm">
-                    <CardHeader>
-                        <div className="flex justify-between items-center">
-                            <CardTitle className="text-lg">Top seals channel</CardTitle>
-                            <Button variant="outline" size="sm" className="h-8">Monthly <ChevronDown className="w-4 h-4 ml-1" /></Button>
-                        </div>
-                        <CardDescription>Last 90 days</CardDescription>
+                        <CardTitle>Agent Leaderboard</CardTitle>
+                        <CardDescription>Top performing agents this month</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead className="w-1/4">Status</TableHead>
-                                    <TableHead className="w-1/4">Name</TableHead>
-                                    <TableHead className="w-1/4">Device</TableHead>
-                                    <TableHead className="w-1/4">Order number</TableHead>
-                                    <TableHead className="w-1/4 text-right">Date</TableHead>
+                                    <TableHead className="w-2/5">Agent</TableHead>
+                                    <TableHead className="w-1/5 text-center">Chats</TableHead>
+                                    <TableHead className="w-1/5 text-center">Avg. Response</TableHead>
+                                    <TableHead className="w-1/5 text-right">CSAT</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {recentOrders.map((order, index) => (
+                                {agentLeaderboard.map((agent, index) => (
                                     <TableRow key={index}>
                                         <TableCell>
-                                            <Badge variant={
-                                                order.status === 'Complete' ? 'default' : 
-                                                order.status === 'In process' ? 'secondary' : 'destructive'
-                                            } className={
-                                                order.status === 'Complete' ? 'bg-green-100 text-green-800' :
-                                                order.status === 'In process' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
-                                            }>
-                                                {order.status}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-2">
-                                                <Avatar className="h-8 w-8">
-                                                    <AvatarImage src={order.avatar} />
-                                                    <AvatarFallback>{order.name.charAt(0)}</AvatarFallback>
+                                            <div className="flex items-center gap-3">
+                                                <Avatar className="h-9 w-9">
+                                                    <AvatarImage src={agent.avatar} />
+                                                    <AvatarFallback>{agent.name.charAt(0)}</AvatarFallback>
                                                 </Avatar>
                                                 <div>
-                                                    <p className="font-semibold">{order.name}</p>
-                                                    <p className="text-xs text-gray-500">{order.handle}</p>
+                                                    <p className="font-semibold">{agent.name}</p>
                                                 </div>
                                             </div>
                                         </TableCell>
-                                        <TableCell>{order.device}</TableCell>
-                                        <TableCell>{order.orderNumber}</TableCell>
-                                        <TableCell className="text-right">{order.date}</TableCell>
+                                        <TableCell className="text-center font-medium">{agent.chats}</TableCell>
+                                        <TableCell className="text-center text-muted-foreground">{agent.avgResponse}</TableCell>
+                                        <TableCell className="text-right">
+                                            <div className="flex items-center justify-end font-semibold">
+                                                <Star className="w-4 h-4 mr-1 text-yellow-400 fill-current" />
+                                                {agent.csat}
+                                            </div>
+                                        </TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
                         </Table>
                     </CardContent>
                 </Card>
+                <Card className="shadow-sm">
+                    <CardHeader>
+                         <CardTitle>Customer Satisfaction (CSAT)</CardTitle>
+                        <CardDescription>Overall score from user feedback</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex flex-col items-center justify-around h-full pt-0">
+                       <div className="text-5xl font-bold flex items-baseline">4.8<span className="text-3xl text-muted-foreground">/5</span></div>
+                       <div className="w-full space-y-4">
+                           {satisfactionData.map(item => (
+                               <div key={item.title} className="flex items-center p-3 bg-gray-50 rounded-lg">
+                                   {item.icon}
+                                   <div className="ml-4 flex-grow">
+                                       <p className="font-semibold">{item.title}</p>
+                                       <p className="text-sm text-gray-500">{item.description}</p>
+                                   </div>
+                                   <div className="text-lg font-bold">
+                                       {item.percentage}
+                                   </div>
+                               </div>
+                           ))}
+                       </div>
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );
 }
-
