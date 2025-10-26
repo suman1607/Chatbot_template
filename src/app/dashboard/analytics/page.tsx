@@ -24,6 +24,12 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+  } from "@/components/ui/dropdown-menu"
+import {
   Area,
   AreaChart,
   Bar,
@@ -106,6 +112,8 @@ const StatsCard = ({ title, value, change, icon, timeframe, description }: { tit
 
 
 export default function AnalyticsPage() {
+    const [timeRange, setTimeRange] = React.useState('Last 30 days');
+
     return (
         <div className="space-y-6">
              <div className="flex items-center justify-between">
@@ -113,9 +121,20 @@ export default function AnalyticsPage() {
                     <h1 className="text-3xl font-bold">Analytics</h1>
                     <p className="text-muted-foreground">Insights into your support performance and customer engagement.</p>
                 </div>
-                <Button variant="outline" size="sm" className="h-9">
-                    Last 30 days <ChevronDown className="w-4 h-4 ml-2" />
-                </Button>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" className="h-9">
+                            {timeRange} <ChevronDown className="w-4 h-4 ml-2" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => setTimeRange('Last 24 hours')}>Last 24 hours</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setTimeRange('Last 7 days')}>Last 7 days</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setTimeRange('Last 30 days')}>Last 30 days</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setTimeRange('Last 90 days')}>Last 90 days</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setTimeRange('All time')}>All time</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -188,11 +207,9 @@ export default function AnalyticsPage() {
                                     </Pie>
                                 </PieChart>
                             </ResponsiveContainer>
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="text-center">
-                                    <p className="text-3xl font-bold">75%</p>
-                                    <p className="text-sm text-gray-500">Resolved by AI</p>
-                                </div>
+                            <div className="absolute inset-0 flex items-center justify-center flex-col">
+                                <p className="text-3xl font-bold">75%</p>
+                                <p className="text-sm text-gray-500">Resolved by AI</p>
                             </div>
                         </div>
                         <div className="flex justify-center gap-4">
