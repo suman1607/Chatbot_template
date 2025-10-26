@@ -6,6 +6,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { AuthForm } from "./auth-form";
 import { useState } from "react";
@@ -22,7 +23,7 @@ export function AuthDialog({ open, onOpenChange, children }: AuthDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      {children}
+      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="p-0 max-w-sm rounded-2xl border-0 bg-transparent shadow-none">
         <DialogHeader className="sr-only">
           <DialogTitle>{isLogin ? "Sign In" : "Sign Up"}</DialogTitle>
@@ -30,6 +31,7 @@ export function AuthDialog({ open, onOpenChange, children }: AuthDialogProps) {
         <AuthForm
           isLogin={isLogin}
           onToggle={() => setIsLogin(!isLogin)}
+          onSuccess={() => onOpenChange(false)}
         />
       </DialogContent>
     </Dialog>

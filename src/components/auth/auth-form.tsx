@@ -4,6 +4,11 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
+import { useAuth } from "@/firebase";
+import { initiateEmailSignUp, initiateEmailSignIn } from "@/firebase/non-blocking-login";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+
 
 const GoogleIcon = () => (
     <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 488 512">
@@ -26,19 +31,41 @@ const TwitterIcon = () => (
 type AuthFormProps = {
     isLogin: boolean;
     onToggle: () => void;
+    onSuccess: () => void;
 };
 
-export function AuthForm({ isLogin, onToggle }: AuthFormProps) {
+export function AuthForm({ isLogin, onToggle, onSuccess }: AuthFormProps) {
+  const auth = useAuth();
+  const { toast } = useToast();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+        if(isLogin) {
+            initiateEmailSignIn(auth, email, password);
+        } else {
+            initiateEmailSignUp(auth, email, password);
+        }
+        onSuccess();
+        toast({ title: isLogin ? 'Signed in successfully' : 'Signed up successfully' });
+    } catch (error: any) {
+        toast({ variant: 'destructive', title: 'Error', description: error.message });
+    }
+  };
+
   return (
     <div className="max-w-sm rounded-[40px] bg-gradient-to-b from-[#f4f7fb] to-white p-8 border-[5px] border-white shadow-[0_30px_30px_-20px_rgba(133,189,215,0.88)] m-5">
       <h2 className="text-center text-3xl font-black text-blue-600">{isLogin ? "Sign In" : "Sign Up"}</h2>
       
-      <form className="mt-5">
+      <form className="mt-5" onSubmit={handleSubmit}>
         {!isLogin && (
-            <Input required className="mt-4 h-12 w-full rounded-2xl border-2 border-transparent bg-white px-5 shadow-[0px_10px_10px_-5px_#cff0ff] focus:border-cyan-400 focus:outline-none" type="text" name="name" id="name" placeholder="Full Name" />
+            <Input required className="mt-4 h-12 w-full rounded-2xl border-2 border-transparent bg-white px-5 shadow-[0px_10px_10px_-5px_#cff0ff] focus:border-cyan-400 focus:outline-none" type="text" name="name" id="name" placeholder="Full Name" value={name} onChange={(e) => setName(e.target.value)} />
         )}
-        <Input required className="mt-4 h-12 w-full rounded-2xl border-2 border-transparent bg-white px-5 shadow-[0px_10px_10px_-5px_#cff0ff] focus:border-cyan-400 focus:outline-none" type="email" name="email" id="email" placeholder="E-mail" />
-        <Input required className="mt-4 h-12 w-full rounded-2xl border-2 border-transparent bg-white px-5 shadow-[0px_10px_10px_-5px_#cff0ff] focus:border-cyan-400 focus:outline-none" type="password" name="password" id="password" placeholder="Password" />
+        <Input required className="mt-4 h-12 w-full rounded-2xl border-2 border-transparent bg-white px-5 shadow-[0px_10px_10px_-5px_#cff0ff] focus:border-cyan-400 focus:outline-none" type="email" name="email" id="email" placeholder="E-mail" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <Input required className="mt-4 h-12 w-full rounded-2xl border-2 border-transparent bg-white px-5 shadow-[0px_10px_10px_-5px_#cff0ff] focus:border-cyan-400 focus:outline-none" type="password" name="password" id="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
         
         {isLogin && (
             <Link href="#" className="mt-2.5 ml-2.5 block text-xs text-cyan-500 no-underline">
@@ -46,7 +73,7 @@ export function AuthForm({ isLogin, onToggle }: AuthFormProps) {
             </Link>
         )}
         
-        <Button className="mt-5 block h-auto w-full rounded-2xl border-none bg-gradient-to-r from-blue-600 to-cyan-500 p-4 font-bold text-white shadow-[0px_20px_10px_-15px_rgba(133,189,215,0.88)] transition-all duration-200 ease-in-out hover:scale-105 hover:shadow-[0px_23px_10px_-20px_rgba(133,189,215,0.88)] active:scale-95 active:shadow-[0px_15px_10px_-10px_rgba(133,189,215,0.88)]">
+        <Button type="submit" className="mt-5 block h-auto w-full rounded-2xl border-none bg-gradient-to-r from-blue-600 to-cyan-500 p-4 font-bold text-white shadow-[0px_20px_10px_-15px_rgba(133,189,215,0.88)] transition-all duration-200 ease-in-out hover:scale-105 hover:shadow-[0px_23px_10px_-20px_rgba(133,189,215,0.88)] active:scale-95 active:shadow-[0px_15px_10px_-10px_rgba(133,189,215,0.88)]">
             {isLogin ? "Sign In" : "Sign Up"}
         </Button>
       </form>
