@@ -286,15 +286,15 @@ export default function TeamPage() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         {pendingInvites.map((invite, index) => (
-                             <div key={index} className="flex items-center justify-between">
+                             <div key={index} className="flex flex-wrap items-center justify-between gap-2">
                                  <div className="flex items-center gap-3">
                                     <Mail className="w-5 h-5 text-primary"/>
                                     <div>
-                                        <p className="font-medium text-sm">{invite.email}</p>
+                                        <p className="font-medium text-sm truncate">{invite.email}</p>
                                         <p className="text-xs text-muted-foreground">{invite.role} - Invited {invite.invited}</p>
                                     </div>
                                  </div>
-                                 <div className="flex gap-1">
+                                 <div className="flex gap-1 shrink-0">
                                     <Button variant="outline" size="sm">Resend</Button>
                                     <Button variant="ghost" size="sm" className="text-red-500">Cancel</Button>
                                  </div>
@@ -335,5 +335,7 @@ export default function TeamPage() {
         </div>
     </div>
   );
+
+    
 
     
