@@ -168,27 +168,32 @@ export default function AnalyticsPage() {
                         <CardDescription>Breakdown of AI vs. agent handling</CardDescription>
                     </CardHeader>
                     <CardContent className="flex flex-col items-center justify-center">
-                        <ResponsiveContainer width="100%" height={200}>
-                            <PieChart>
-                                <Pie
-                                    data={aiPerformanceData}
-                                    cx="50%"
-                                    cy="50%"
-                                    innerRadius={60}
-                                    outerRadius={80}
-                                    paddingAngle={2}
-                                    dataKey="value"
-                                >
-                                    {aiPerformanceData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.color} stroke={entry.color} />
-                                    ))}
-                                </Pie>
-                                <Tooltip />
-                            </PieChart>
-                        </ResponsiveContainer>
-                        <div className="text-center -mt-20">
-                            <p className="text-3xl font-bold">75%</p>
-                            <p className="text-sm text-gray-500">Resolved by AI</p>
+                        <div className="relative w-full h-[200px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={aiPerformanceData}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={60}
+                                        outerRadius={80}
+                                        paddingAngle={2}
+                                        dataKey="value"
+                                        startAngle={90}
+                                        endAngle={450}
+                                    >
+                                        {aiPerformanceData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.color} stroke={entry.color} />
+                                        ))}
+                                    </Pie>
+                                </PieChart>
+                            </ResponsiveContainer>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="text-center">
+                                    <p className="text-3xl font-bold">75%</p>
+                                    <p className="text-sm text-gray-500">Resolved by AI</p>
+                                </div>
+                            </div>
                         </div>
                         <div className="flex justify-center gap-4 mt-6">
                             <div className="flex items-center gap-2 text-sm"><div className="w-3 h-3 rounded-full bg-green-500" />AI Resolved</div>
