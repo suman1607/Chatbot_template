@@ -2,11 +2,15 @@
 'use client';
 
 import { getAuth, signOut } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
 
 export function LogoutButton() {
+  const router = useRouter();
   const handleLogout = () => {
     const auth = getAuth();
-    signOut(auth);
+    signOut(auth).then(() => {
+        router.push('/');
+    });
   };
 
   return (

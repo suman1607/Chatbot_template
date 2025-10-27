@@ -31,11 +31,12 @@ import {
   Search,
   Bell,
   Mail,
+  LogOut,
 } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { usePathname, useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { LogoutButton } from '@/components/auth/logout-button';
+import { getAuth, signOut } from 'firebase/auth';
 import { useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -95,6 +96,12 @@ export default function AdminLayout({
       return <>{children}</>;
   }
 
+  const handleLogout = () => {
+    const auth = getAuth();
+    signOut(auth);
+    router.push('/admin/login');
+  };
+
 
   return (
     <SidebarProvider>
@@ -130,8 +137,8 @@ export default function AdminLayout({
         <SidebarFooter>
             <SidebarMenu>
                 <SidebarMenuItem>
-                    <SidebarMenuButton href="/admin/logout" tooltip="Logout" className="text-muted-foreground hover:bg-accent hover:text-foreground">
-                        <LogoutButton />
+                    <SidebarMenuButton onClick={handleLogout} tooltip="Logout" className="text-muted-foreground hover:bg-accent hover:text-foreground">
+                        <LogOut />
                         <span>Logout</span>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
