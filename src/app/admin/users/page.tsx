@@ -65,11 +65,11 @@ export default function AdminUsersPage() {
                 </CardHeader>
                 <CardContent>
                     <div className="flex justify-between items-center mb-4">
-                        <div className="relative w-full max-w-sm">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                        <div className="group relative max-w-sm">
+                            <Search className="icon absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 fill-muted-foreground" />
                             <Input 
                                 placeholder="Search by name or email..."
-                                className="pl-10"
+                                className="h-11 w-full pl-10 pr-4 border-2 border-transparent rounded-lg outline-none bg-orange-100/50 text-foreground transition-all duration-300 ease-in-out focus:bg-white focus:border-primary focus:shadow-[0_0_5px_hsl(var(--primary)/0.5)]"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
