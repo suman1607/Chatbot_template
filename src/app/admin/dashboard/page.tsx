@@ -73,7 +73,7 @@ export default function AdminDashboardPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <Card className="lg:col-span-2">
+                <Card className="lg:col-span-3">
                     <CardHeader>
                         <CardTitle>Project Analytics</CardTitle>
                     </CardHeader>
@@ -105,24 +105,10 @@ export default function AdminDashboardPage() {
                         </ResponsiveContainer>
                     </CardContent>
                 </Card>
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Reminders</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="p-4 bg-orange-50 border-l-4 border-primary rounded-r-lg">
-                            <h4 className="font-semibold">Meeting with Arc Company</h4>
-                            <p className="text-sm text-muted-foreground">Time: 02:00pm - 04:00pm</p>
-                        </div>
-                         <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
-                            Start Meeting
-                         </Button>
-                    </CardContent>
-                </Card>
             </div>
             
-             <div className="grid grid-cols-1 lg:grid-cols-7 gap-6">
-                <Card className="lg:col-span-3">
+             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
                     <CardHeader>
                          <div className="flex justify-between items-center">
                             <CardTitle>Team Collaboration</CardTitle>
@@ -149,7 +135,7 @@ export default function AdminDashboardPage() {
                         </div>
                     </CardContent>
                 </Card>
-                 <Card className="lg:col-span-2">
+                 <Card>
                     <CardHeader>
                         <CardTitle>Project Progress</CardTitle>
                     </CardHeader>
@@ -179,25 +165,6 @@ export default function AdminDashboardPage() {
                              <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-primary"/>Completed</div>
                             <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-muted"/>In Progress</div>
                         </div>
-                    </CardContent>
-                </Card>
-                <Card className="lg:col-span-2">
-                    <CardHeader>
-                        <div className="flex justify-between items-center">
-                            <CardTitle>Project</CardTitle>
-                             <Button variant="outline" size="sm"><Plus className="w-4 h-4 mr-1"/> New</Button>
-                        </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {criticalAlerts.map((alert, index) => (
-                            <div key={index} className="flex items-start gap-3">
-                                {alert.icon}
-                                <div>
-                                    <p className="text-sm text-gray-800 font-medium">{alert.text}</p>
-                                    <p className="text-xs text-muted-foreground">Due date: {alert.dueDate}</p>
-                                </div>
-                            </div>
-                        ))}
                     </CardContent>
                 </Card>
             </div>
