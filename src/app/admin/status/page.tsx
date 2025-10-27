@@ -98,11 +98,13 @@ const SystemCard = ({ name, status, uptime, latency, icon } : { name: string, st
     }
     return (
         <Card className={`shadow-sm ${statusColors[status] || 'border-gray-200'}`}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardHeader className="flex flex-row items-start justify-between pb-2">
                 <CardTitle className="text-base font-semibold flex items-center gap-2">
                     <div className="p-2 bg-orange-100/80 text-primary rounded-lg">{icon}</div> {name}
                 </CardTitle>
-                <StatusBadge status={status} />
+                <div className="text-right">
+                    <StatusBadge status={status} />
+                </div>
             </CardHeader>
             <CardContent>
                 <div className="flex justify-between items-baseline text-sm text-muted-foreground">
