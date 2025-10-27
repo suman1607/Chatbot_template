@@ -33,6 +33,7 @@ import { useUser } from '@/firebase';
 import { usePathname, useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { LogoutButton } from '@/components/auth/logout-button';
+import { useEffect } from 'react';
 
 const menuGroups = [
     {
@@ -68,25 +69,28 @@ export default function AdminLayout({
   const router = useRouter();
   const pathname = usePathname();
 
+  useEffect(() => {
+    if (isUserLoading) return;
+
+    // If not logged in and not on the login page, redirect.
+    if (!user && pathname !== '/admin/login') {
+      router.push('/admin/login');
+    }
+    
+    // If logged in but on the login page, redirect to dashboard.
+    if(user && pathname === '/admin/login') {
+      router.push('/admin/dashboard');
+    }
+  }, [user, isUserLoading, pathname, router]);
+
+
   // This is a simplified check. A real app would have role-based access control.
-  if (isUserLoading) {
+  if (isUserLoading || (!user && pathname !== '/admin/login') || (user && pathname === '/admin/login')) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-100">
         <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-blue-600"></div>
       </div>
     );
-  }
-
-  // If not logged in and not on the login page, redirect.
-  if (!user && pathname !== '/admin/login') {
-    router.push('/admin/login');
-    return null;
-  }
-  
-  // If logged in but on the login page, redirect to dashboard.
-  if(user && pathname === '/admin/login') {
-    router.push('/admin/dashboard');
-    return null;
   }
 
   // Don't render the layout for the login page
