@@ -158,7 +158,7 @@ export default function AdminLayout({
         <SidebarHeader className="h-20">
           <div className="flex items-center gap-2">
             <Bot className="w-8 h-8 text-primary" />
-            <span className="text-xl font-bold group-data-[collapsible=icon]:hidden text-foreground">Donezo</span>
+            <span className="text-xl font-bold group-data-[collapsible=icon]:hidden text-foreground">Admin</span>
           </div>
         </SidebarHeader>
         <SidebarContent>
