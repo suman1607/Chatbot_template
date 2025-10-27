@@ -15,6 +15,7 @@ import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarSeparator,
+  useSidebar
 } from '@/components/ui/sidebar';
 import {
   LayoutDashboard,
@@ -36,6 +37,7 @@ import {
   GitBranch,
   KeyRound,
   Settings,
+  PanelLeft,
 } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { usePathname, useRouter } from 'next/navigation';
@@ -43,6 +45,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getAuth, signOut } from 'firebase/auth';
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 const menuGroups = [
     {
@@ -75,6 +78,39 @@ const menuGroups = [
     }
 ];
 
+const Header = () => {
+    const { user } = useUser();
+    const { state, toggleSidebar } = useSidebar();
+    
+    return (
+        <header className="flex items-center justify-between p-4 h-20 border-b bg-background">
+            <div className="flex items-center gap-4">
+                 <button 
+                    onClick={toggleSidebar}
+                    className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+                >
+                    <PanelLeft className={cn("w-5 h-5 transition-transform", state === 'expanded' ? 'rotate-180' : '')} />
+                </button>
+            </div>
+            <div className="flex items-center gap-4">
+                <Button variant="ghost" size="icon"><Mail className="w-5 h-5 text-muted-foreground"/></Button>
+                <Button variant="ghost" size="icon"><Bell className="w-5 h-5 text-muted-foreground"/></Button>
+                <div className="flex items-center gap-3">
+                    <Avatar className="w-9 h-9">
+                        <AvatarImage src={user?.photoURL ?? ''} alt="Admin avatar" />
+                        <AvatarFallback>
+                            <UserIcon />
+                        </AvatarFallback>
+                    </Avatar>
+                    <div className="hidden sm:block">
+                        <p className="text-sm font-semibold truncate text-foreground">{user?.displayName ?? 'Admin User'}</p>
+                        <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+    )
+}
 
 export default function AdminLayout({
   children,
@@ -159,27 +195,7 @@ export default function AdminLayout({
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
-        <header className="flex items-center justify-between p-4 h-20 border-b bg-background">
-            <div className="flex items-center gap-4">
-                <SidebarTrigger className="md:hidden" />
-            </div>
-            <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon"><Mail className="w-5 h-5 text-muted-foreground"/></Button>
-                <Button variant="ghost" size="icon"><Bell className="w-5 h-5 text-muted-foreground"/></Button>
-                <div className="flex items-center gap-3">
-                    <Avatar className="w-9 h-9">
-                        <AvatarImage src={user?.photoURL ?? ''} alt="Admin avatar" />
-                        <AvatarFallback>
-                            <UserIcon />
-                        </AvatarFallback>
-                    </Avatar>
-                    <div className="hidden sm:block">
-                        <p className="text-sm font-semibold truncate text-foreground">{user?.displayName ?? 'Admin User'}</p>
-                        <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
-                    </div>
-                </div>
-            </div>
-        </header>
+        <Header />
         <main className="flex-1 p-6 bg-muted/40">
             {children}
         </main>
