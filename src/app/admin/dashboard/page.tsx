@@ -105,8 +105,8 @@ export default function AdminDashboardPage() {
                 <Card>
                     <CardHeader>
                          <div className="flex justify-between items-center">
-                            <CardTitle>Team Collaboration</CardTitle>
-                            <Button variant="outline" size="sm"><Plus className="w-4 h-4 mr-1"/> Add Member</Button>
+                            <CardTitle>Recently Joined Workspaces</CardTitle>
+                            <Button variant="outline" size="sm">View All</Button>
                         </div>
                     </CardHeader>
                     <CardContent>
@@ -117,13 +117,13 @@ export default function AdminDashboardPage() {
                                     <img src={signup.avatar} alt={signup.name} className="w-9 h-9 rounded-full" />
                                     <div>
                                         <p className="font-semibold">{signup.name}</p>
-                                        <p className="text-xs text-muted-foreground">Working on Github Project</p>
+                                        <p className="text-xs text-muted-foreground">Joined 2 days ago</p>
                                     </div>
                                 </div>
                                 <span className={`px-2 py-1 text-xs rounded-full ${
                                     signup.status === 'Completed' ? 'bg-green-100 text-green-700' : 
                                     signup.status === 'In Progress' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'
-                                }`}>{signup.status}</span>
+                                }`}>Pro Plan</span>
                             </div>
                         ))}
                         </div>
