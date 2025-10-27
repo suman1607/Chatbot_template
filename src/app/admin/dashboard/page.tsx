@@ -5,7 +5,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Users, CreditCard, DollarSign, Activity, AlertTriangle, CheckCircle, ArrowRight } from 'lucide-react';
+import { Users, CreditCard, DollarSign, Activity, AlertTriangle, CheckCircle, ArrowRight, LifeBuoy } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const overviewStats = [
