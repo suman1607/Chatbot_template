@@ -39,8 +39,8 @@ export default function AdminLoginPage() {
             <Card className="w-full max-w-md shadow-2xl">
                 <CardHeader className="text-center">
                     <div className="flex justify-center items-center gap-2 mb-4">
-                        <Bot className="w-8 h-8 text-blue-600" />
-                        <CardTitle className="text-2xl font-bold text-blue-600">ChatGenius Admin</CardTitle>
+                        <Bot className="w-8 h-8 text-primary" />
+                        <CardTitle className="text-2xl font-bold text-primary">ChatGenius Admin</CardTitle>
                     </div>
                     <CardDescription>Enter your credentials to access the admin panel.</CardDescription>
                 </CardHeader>
@@ -68,7 +68,7 @@ export default function AdminLoginPage() {
                             />
                         </div>
                         {error && <p className="text-sm text-red-500">{error}</p>}
-                        <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                        <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white">
                             <LogIn className="mr-2 h-4 w-4" /> Sign In
                         </Button>
                     </form>

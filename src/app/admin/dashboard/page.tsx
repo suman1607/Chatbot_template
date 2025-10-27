@@ -9,7 +9,7 @@ import { Users, CreditCard, DollarSign, Activity, AlertTriangle, CheckCircle, Ar
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const overviewStats = [
-    { title: "Total Users", value: "1,254", icon: <Users className="w-6 h-6 text-blue-500" />, change: "+12% this month" },
+    { title: "Total Users", value: "1,254", icon: <Users className="w-6 h-6 text-primary" />, change: "+12% this month" },
     { title: "Active Subscriptions", value: "980", icon: <CreditCard className="w-6 h-6 text-green-500" />, change: "+5.2% this month" },
     { title: "Monthly Recurring Revenue", value: "$12,450", icon: <DollarSign className="w-6 h-6 text-purple-500" />, change: "+8.1% this month" },
     { title: "Open Support Tickets", value: "23", icon: <LifeBuoy className="w-6 h-6 text-orange-500" />, change: "-5 since yesterday" },
@@ -68,15 +68,15 @@ export default function AdminDashboardPage() {
                             <AreaChart data={revenueData}>
                                 <defs>
                                     <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8}/>
-                                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
+                                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
+                                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false}/>
                                 <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
                                 <YAxis fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `$${value/1000}k`} />
                                 <Tooltip />
-                                <Area type="monotone" dataKey="revenue" stroke="#3B82F6" fill="url(#revenueGradient)" strokeWidth={2} />
+                                <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" fill="url(#revenueGradient)" strokeWidth={2} />
                             </AreaChart>
                         </ResponsiveContainer>
                     </CardContent>
@@ -141,7 +141,7 @@ export default function AdminDashboardPage() {
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-gray-100 rounded-full"><Activity className="w-4 h-4 text-blue-600"/></div>
+                            <div className="p-2 bg-gray-100 rounded-full"><Activity className="w-4 h-4 text-primary"/></div>
                             <div>
                                 <p className="text-sm">You impersonated user 'jane.doe@example.com'.</p>
                                 <p className="text-xs text-gray-500">1 hour ago</p>

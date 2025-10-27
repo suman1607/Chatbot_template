@@ -72,28 +72,23 @@ export default function AdminLayout({
   useEffect(() => {
     if (isUserLoading) return;
 
-    // If not logged in and not on the login page, redirect.
     if (!user && pathname !== '/admin/login') {
       router.push('/admin/login');
     }
     
-    // If logged in but on the login page, redirect to dashboard.
     if(user && pathname === '/admin/login') {
       router.push('/admin/dashboard');
     }
   }, [user, isUserLoading, pathname, router]);
 
-
-  // This is a simplified check. A real app would have role-based access control.
-  if (isUserLoading || (!user && pathname !== '/admin/login') || (user && pathname === '/admin/login')) {
+  if (isUserLoading || (!user && pathname !== '/admin/login')) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-100">
-        <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-blue-600"></div>
+        <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-primary"></div>
       </div>
     );
   }
 
-  // Don't render the layout for the login page
   if (pathname === '/admin/login') {
       return <>{children}</>;
   }
@@ -104,7 +99,7 @@ export default function AdminLayout({
       <Sidebar variant="inset" collapsible="icon" className="bg-gray-900 text-white border-gray-700">
         <SidebarHeader>
           <div className="flex items-center gap-2">
-            <Bot className="w-8 h-8 text-blue-400" />
+            <Bot className="w-8 h-8 text-primary" />
             <span className="text-xl font-bold group-data-[collapsible=icon]:hidden text-white">Admin</span>
           </div>
         </SidebarHeader>
@@ -119,7 +114,7 @@ export default function AdminLayout({
                                     href={item.href} 
                                     tooltip={item.label} 
                                     isActive={pathname === item.href}
-                                    className="text-gray-300 hover:bg-gray-700 hover:text-white data-[active=true]:bg-blue-600 data-[active=true]:text-white"
+                                    className="text-gray-300 hover:bg-gray-700 hover:text-white data-[active=true]:bg-primary data-[active=true]:text-white"
                                 >
                                 <item.icon />
                                 <span>{item.label}</span>
@@ -138,7 +133,7 @@ export default function AdminLayout({
                             href={item.href} 
                             tooltip={item.label} 
                             isActive={pathname === item.href}
-                            className="text-gray-300 hover:bg-gray-700 hover:text-white data-[active=true]:bg-blue-600 data-[active=true]:text-white"
+                            className="text-gray-300 hover:bg-gray-700 hover:text-white data-[active=true]:bg-primary data-[active=true]:text-white"
                         >
                         <item.icon />
                         <span>{item.label}</span>

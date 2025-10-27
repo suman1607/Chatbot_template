@@ -35,7 +35,7 @@ const users = [
 const PlanBadge = ({ plan }: { plan: string }) => {
     const planColors: {[key: string]: string} = {
         'Starter': 'bg-green-100 text-green-800',
-        'Pro': 'bg-blue-100 text-blue-800',
+        'Pro': 'bg-orange-100 text-orange-800',
         'Business': 'bg-purple-100 text-purple-800'
     }
     return <Badge variant="outline" className={planColors[plan]}>{plan}</Badge>;
@@ -74,7 +74,7 @@ export default function AdminUsersPage() {
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
-                        <Button className="bg-blue-600 hover:bg-blue-700 text-white">Add User</Button>
+                        <Button className="bg-primary hover:bg-primary/90 text-white">Add User</Button>
                     </div>
 
                     <Table>
