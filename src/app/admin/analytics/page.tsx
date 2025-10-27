@@ -88,6 +88,15 @@ const chatVolumeData = [
     { name: 'Sun', volume: 1900 },
 ];
 
+const retentionData = [
+    { week: 'Week 0', d1: 100, d7: 100, d30: 100 },
+    { week: 'Week 1', d1: 85, d7: 65, d30: 45 },
+    { week: 'Week 2', d1: 88, d7: 68, d30: 48 },
+    { week: 'Week 3', d1: 82, d7: 62, d30: 42 },
+    { week: 'Week 4', d1: 90, d7: 70, d30: 50 },
+    { week: 'Week 5', d1: 91, d7: 72, d30: 51 },
+];
+
 
 const KpiCard = ({ title, value, change, icon }: { title: string, value: string, change: string, icon: React.ReactNode }) => (
     <Card>
@@ -110,7 +119,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
         return (
             <div className="bg-background border p-2 rounded-lg shadow-lg">
-                <p className="font-bold text-base">{payload.map((pld: any) => `$${pld.value.toLocaleString()}`).join(", ")}</p>
+                <p className="font-bold text-base">{payload.map((pld: any) => `${pld.name}: ${pld.value}%`).join(", ")}</p>
                 <p className="text-sm text-muted-foreground">{label}</p>
             </div>
         );
@@ -232,7 +241,17 @@ export default function AdminAnalyticsPage() {
                                <CardDescription>Day 1, 7, and 30 retention rates.</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <p className="text-muted-foreground">This section is under construction.</p>
+                                <ResponsiveContainer width="100%" height={250}>
+                                    <LineChart data={retentionData}>
+                                        <XAxis dataKey="week" axisLine={false} tickLine={false} fontSize={12} />
+                                        <YAxis axisLine={false} tickLine={false} fontSize={12} tickFormatter={(val) => `${val}%`}/>
+                                        <Tooltip content={<CustomTooltip />} />
+                                        <Legend verticalAlign="top" height={36}/>
+                                        <Line type="monotone" dataKey="d1" name="Day 1" stroke="hsl(var(--primary))" strokeWidth={2} />
+                                        <Line type="monotone" dataKey="d7" name="Day 7" stroke="hsl(var(--chart-2))" strokeWidth={2} />
+                                        <Line type="monotone" dataKey="d30" name="Day 30" stroke="hsl(var(--chart-5))" strokeWidth={2} />
+                                    </LineChart>
+                                </ResponsiveContainer>
                             </CardContent>
                         </Card>
                     </div>
@@ -296,3 +315,5 @@ export default function AdminAnalyticsPage() {
         </div>
     );
 }
+
+    
