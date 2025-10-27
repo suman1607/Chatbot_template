@@ -181,7 +181,7 @@ export default function AdminDashboardPage() {
                             </PieChart>
                         </ResponsiveContainer>
                         <p className="text-3xl font-bold mt-[-3.5rem] mb-2">41%</p>
-                        <p className="text-sm text-muted-foreground">Project Ended</p>
+                        <p className="text-sm text-muted-foreground">Completed</p>
                         <div className="flex gap-4 mt-4 text-xs">
                              <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-primary"/>Completed</div>
                             <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-muted"/>In Progress</div>
@@ -211,3 +211,5 @@ export default function AdminDashboardPage() {
         </div>
     );
 }
+
+    
