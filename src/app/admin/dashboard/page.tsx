@@ -33,15 +33,9 @@ const recentSignups = [
     { name: "Market Wizards", status: "In Progress", avatar: "https://picsum.photos/seed/4/32/32" },
 ]
 
-const projectProgressData = [
-    { name: 'Completed', value: 41, fill: 'hsl(var(--primary))' },
-    { name: 'In Progress', value: 59, fill: 'hsl(var(--muted))' }
-]
-
-const criticalAlerts = [
-    { text: "Develop API Endpoints", dueDate: "Nov 26, 2024", icon: <CheckCircle className="w-5 h-5 text-blue-500" /> },
-    { text: "Onboarding Flow", dueDate: "Nov 28, 2024", icon: <CheckCircle className="w-5 h-5 text-purple-500" /> },
-    { text: "Build Dashboard", dueDate: "Nov 30, 2024", icon: <CheckCircle className="w-5 h-5 text-green-500" /> },
+const ticketStatusData = [
+    { name: 'Closed', value: 182, fill: 'hsl(var(--primary))' },
+    { name: 'Open', value: 23, fill: 'hsl(var(--muted))' }
 ]
 
 
@@ -137,13 +131,13 @@ export default function AdminDashboardPage() {
                 </Card>
                  <Card>
                     <CardHeader>
-                        <CardTitle>Project Progress</CardTitle>
+                        <CardTitle>Support Tickets</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-col items-center justify-center">
                         <ResponsiveContainer width="100%" height={150}>
                             <PieChart>
                                 <Pie 
-                                    data={projectProgressData} 
+                                    data={ticketStatusData} 
                                     cx="50%" 
                                     cy="50%" 
                                     innerRadius={50} 
@@ -153,17 +147,29 @@ export default function AdminDashboardPage() {
                                     paddingAngle={2}
                                     dataKey="value"
                                 >
-                                     {projectProgressData.map((entry, index) => (
+                                     {ticketStatusData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={entry.fill} stroke={entry.fill} />
                                     ))}
                                 </Pie>
+                                <Tooltip
+                                    content={({ active, payload }) => {
+                                        if (active && payload && payload.length) {
+                                            return (
+                                                <div className="bg-background border p-2 rounded-lg shadow-lg">
+                                                    <p className="font-bold text-base">{`${payload[0].name}: ${payload[0].value}`}</p>
+                                                </div>
+                                            );
+                                        }
+                                        return null;
+                                    }}
+                                />
                             </PieChart>
                         </ResponsiveContainer>
-                        <p className="text-3xl font-bold mt-[-3.5rem] mb-2">41%</p>
-                        <p className="text-sm text-muted-foreground">Completed</p>
+                        <p className="text-3xl font-bold mt-[-3.5rem] mb-2">23</p>
+                        <p className="text-sm text-muted-foreground">Open Tickets</p>
                         <div className="flex gap-4 mt-4 text-xs">
-                             <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-primary"/>Completed</div>
-                            <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-muted"/>In Progress</div>
+                             <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-primary"/>Closed</div>
+                            <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-muted"/>Open</div>
                         </div>
                     </CardContent>
                 </Card>
