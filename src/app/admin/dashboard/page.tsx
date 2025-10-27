@@ -16,14 +16,13 @@ const overviewStats = [
     { title: "Open Tickets", value: "23", icon: <LifeBuoy className="w-8 h-8 text-red-500" />, change: "-5", bgColor: "bg-red-100"},
 ];
 
-const projectAnalyticsData = [
-  { name: 'S', value: 20 },
-  { name: 'M', value: 80 },
-  { name: 'T', value: 65, label: "65%" },
-  { name: 'W', value: 90 },
-  { name: 'T', value: 30 },
-  { name: 'F', value: 50 },
-  { name: 'S', value: 25 },
+const retentionData = [
+  { name: 'Jan', retention: 98 },
+  { name: 'Feb', retention: 97 },
+  { name: 'Mar', retention: 96 },
+  { name: 'Apr', retention: 95 },
+  { name: 'May', retention: 94 },
+  { name: 'Jun', retention: 93 },
 ];
 
 const recentSignups = [
@@ -69,33 +68,35 @@ export default function AdminDashboardPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <Card className="lg:col-span-3">
                     <CardHeader>
-                        <CardTitle>Project Analytics</CardTitle>
+                        <CardTitle>Churn & Retention</CardTitle>
+                        <CardDescription>Monthly customer churn and retention rates.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <ResponsiveContainer width="100%" height={250}>
-                            <BarChart data={projectAnalyticsData} barSize={20}>
+                            <AreaChart data={retentionData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                                <defs>
+                                    <linearGradient id="retentionGradient" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8} />
+                                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                                 <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
-                                <YAxis hide={true} />
+                                <YAxis domain={[90, 100]} fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}%`} />
                                 <Tooltip
-                                    cursor={{fill: 'hsla(var(--primary), 0.1)', radius: 8}}
                                     content={({ active, payload, label }) => {
                                         if (active && payload && payload.length) {
                                             return (
                                                 <div className="bg-background border p-2 rounded-lg shadow-lg">
-                                                    <p className="font-bold text-base">{`${label}: ${payload[0].value}%`}</p>
+                                                    <p className="font-bold text-base">{`${label}: ${payload[0].value}% Retention`}</p>
                                                 </div>
                                             );
                                         }
                                         return null;
                                     }}
                                 />
-                                <Bar dataKey="value" radius={[10, 10, 0, 0]}>
-                                    {projectAnalyticsData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={index === 2 || index === 3 ? 'hsl(var(--primary))' : 'hsl(var(--muted))'} />
-                                     ))}
-                                </Bar>
-                            </BarChart>
+                                <Area type="monotone" dataKey="retention" stroke="hsl(var(--primary))" fill="url(#retentionGradient)" strokeWidth={2} />
+                            </AreaChart>
                         </ResponsiveContainer>
                     </CardContent>
                 </Card>
