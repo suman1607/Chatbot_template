@@ -114,7 +114,6 @@ export default function AdminSupportPage() {
                     <h1 className="text-3xl font-bold text-gray-800">Tickets & Support</h1>
                     <p className="text-muted-foreground">Manage and resolve customer support requests.</p>
                 </div>
-                 <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">Create Ticket</Button>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
