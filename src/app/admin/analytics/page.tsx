@@ -18,6 +18,9 @@ import {
   LineChart as LineChartIcon,
   HelpCircle,
   Settings,
+  Smile,
+  Clock,
+  CheckCircle,
 } from 'lucide-react';
 import {
   Card,
@@ -97,6 +100,17 @@ const retentionData = [
     { week: 'Week 5', d1: 91, d7: 72, d30: 51 },
 ];
 
+const supportKPIData = [
+  { title: 'Avg. First Response Time', value: '2m 15s', change: '-10%', icon: <Clock /> },
+  { title: 'Avg. Resolution Time', value: '5h 30m', change: '-5%', icon: <CheckCircle /> },
+  { title: 'CSAT', value: '92%', change: '+1.2%', icon: <Smile /> },
+];
+
+const responseTimeData = [
+  { name: 'Jan', frt: 2.5, resolution: 6 }, { name: 'Feb', frt: 2.3, resolution: 5.8 },
+  { name: 'Mar', frt: 2.8, resolution: 6.2 }, { name: 'Apr', frt: 2.1, resolution: 5.5 },
+  { name: 'May', frt: 2.0, resolution: 5.2 }, { name: 'Jun', frt: 2.2, resolution: 5.4 },
+];
 
 const KpiCard = ({ title, value, change, icon }: { title: string, value: string, change: string, icon: React.ReactNode }) => (
     <Card>
@@ -119,7 +133,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
         return (
             <div className="bg-background border p-2 rounded-lg shadow-lg">
-                <p className="font-bold text-base">{payload.map((pld: any) => `${pld.name}: ${pld.value}%`).join(", ")}</p>
+                <p className="font-bold text-base">{payload.map((pld: any) => `${pld.name}: ${pld.value.toLocaleString()}${pld.unit || ''}`).join(", ")}</p>
                 <p className="text-sm text-muted-foreground">{label}</p>
             </div>
         );
@@ -277,13 +291,26 @@ export default function AdminAnalyticsPage() {
                 </TabsContent>
 
                 <TabsContent value="support" className="mt-6 space-y-6">
-                     <Card>
+                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {supportKPIData.map(kpi => <KpiCard key={kpi.title} {...kpi} />)}
+                    </div>
+                    <Card>
                         <CardHeader>
-                           <CardTitle>Support Quality</CardTitle>
-                           <CardDescription>Metrics related to customer support performance.</CardDescription>
+                           <CardTitle>Response & Resolution Times</CardTitle>
+                           <CardDescription>Average time metrics for customer support.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-muted-foreground">This section is under construction.</p>
+                           <ResponsiveContainer width="100%" height={250}>
+                                <LineChart data={responseTimeData}>
+                                    <XAxis dataKey="name" axisLine={false} tickLine={false} fontSize={12} />
+                                    <YAxis yAxisId="left" axisLine={false} tickLine={false} fontSize={12} tickFormatter={(val) => `${val}m`} />
+                                    <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} fontSize={12} tickFormatter={(val) => `${val}h`} />
+                                    <Tooltip content={<CustomTooltip />} />
+                                    <Legend verticalAlign="top" height={36}/>
+                                    <Line yAxisId="left" type="monotone" dataKey="frt" name="First Response Time" stroke="hsl(var(--primary))" strokeWidth={2} unit="m" />
+                                    <Line yAxisId="right" type="monotone" dataKey="resolution" name="Resolution Time" stroke="hsl(var(--chart-2))" strokeWidth={2} unit="h" />
+                                </LineChart>
+                            </ResponsiveContainer>
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -315,5 +342,3 @@ export default function AdminAnalyticsPage() {
         </div>
     );
 }
-
-    
