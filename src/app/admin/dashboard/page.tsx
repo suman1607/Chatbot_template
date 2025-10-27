@@ -53,13 +53,6 @@ export default function AdminDashboardPage() {
                     <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
                     <p className="text-muted-foreground">Plan, prioritize, and accomplish your tasks with ease.</p>
                 </div>
-                <div>
-                    <Button variant="outline" className="mr-2">Import Data</Button>
-                    <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                        <Plus className="w-4 h-4 mr-2"/>
-                        Add Project
-                    </Button>
-                </div>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -211,5 +204,3 @@ export default function AdminDashboardPage() {
         </div>
     );
 }
-
-    
