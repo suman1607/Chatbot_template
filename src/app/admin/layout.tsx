@@ -28,36 +28,49 @@ import {
   FileText,
   Bot,
   User as UserIcon,
-  Search,
   Bell,
   Mail,
   LogOut,
+  Power,
+  Users2,
+  GitBranch,
+  KeyRound,
+  Settings,
 } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { usePathname, useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getAuth, signOut } from 'firebase/auth';
 import { useEffect } from 'react';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
 const menuGroups = [
     {
-        label: 'Menu',
+        label: 'Platform',
         items: [
             { href: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-            { href: '/admin/users', icon: Users, label: 'Users' },
-            { href: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
-            { href: '/admin/team', icon: Users, label: 'Team' },
+            { href: '/admin/users', icon: Users, label: 'Users / Workspaces' },
+            { href: '/admin/billing', icon: CreditCard, label: 'Subscriptions & Billing' },
+            { href: '/admin/support', icon: LifeBuoy, label: 'Tickets & Support' },
+            { href: '/admin/analytics', icon: BarChart3, label: 'Analytics & Reports' },
         ]
     },
     {
-        label: 'General',
+        label: 'Management',
         items: [
-            { href: '/admin/settings', icon: Package, label: 'Settings' },
-            { href: '/admin/support', icon: LifeBuoy, label: 'Help' },
-            { href: '/admin/billing', icon: CreditCard, label: 'Billing' },
-            
+            { href: '/admin/product', icon: Package, label: 'Product & Updates' },
+            { href: '/admin/broadcasts', icon: Send, label: 'Broadcasts' },
+            { href: '/admin/status', icon: Power, label: 'System Health' },
+            { href: '/admin/admins', icon: Users2, label: 'Admin Team' },
+            { href: '/admin/integrations', icon: GitBranch, label: 'API & Integrations' },
+        ]
+    },
+    {
+        label: 'Administration',
+        items: [
+            { href: '/admin/security', icon: Shield, label: 'Security & Audit' },
+            { href: '/admin/docs', icon: FileText, label: 'Docs & Legal' },
+            { href: '/admin/settings', icon: Settings, label: 'Settings' },
         ]
     }
 ];
