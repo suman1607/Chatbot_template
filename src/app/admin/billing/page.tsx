@@ -150,6 +150,8 @@ const StatusBadge = ({ status }: { status: string }) => {
 export default function AdminBillingPage() {
     const [activeTimeRange, setActiveTimeRange] = useState('30d');
 
+    const topPlan = planDistributionData.reduce((prev, current) => (prev.value > current.value) ? prev : current);
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -219,15 +221,19 @@ export default function AdminBillingPage() {
                         <CardTitle>Revenue by Plan</CardTitle>
                         <CardDescription>MRR contribution from each subscription plan.</CardDescription>
                     </CardHeader>
-                    <CardContent className="flex items-center justify-center">
+                    <CardContent className="flex items-center justify-center relative">
                         <ResponsiveContainer width="100%" height={200}>
                             <PieChart>
-                                <Pie data={planDistributionData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={2}>
+                                <Pie data={planDistributionData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={2} startAngle={90} endAngle={450}>
                                     {planDistributionData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} stroke={entry.color} />)}
                                 </Pie>
                                 <Tooltip />
                             </PieChart>
                         </ResponsiveContainer>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                            <span className="text-3xl font-bold" style={{color: topPlan.color}}>{topPlan.value}%</span>
+                            <span className="text-sm font-medium text-muted-foreground">{topPlan.name}</span>
+                        </div>
                     </CardContent>
                 </Card>
             </div>
