@@ -149,10 +149,6 @@ export default function AdminLayout({
         <header className="flex items-center justify-between p-4 h-20 border-b bg-background">
             <div className="flex items-center gap-4">
                 <SidebarTrigger className="md:hidden" />
-                 <div className="relative hidden md:block">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                    <Input placeholder="Search task" className="pl-10 w-64 bg-muted border-none" />
-                </div>
             </div>
             <div className="flex items-center gap-4">
                 <Button variant="ghost" size="icon"><Mail className="w-5 h-5 text-muted-foreground"/></Button>
