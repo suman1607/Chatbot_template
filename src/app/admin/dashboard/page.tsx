@@ -5,7 +5,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
-import { Users, CreditCard, DollarSign, Activity, AlertTriangle, LifeBuoy, ArrowRight, Plus, CheckCircle } from 'lucide-react';
+import { Users, CreditCard, DollarSign, LifeBuoy, Activity, AlertTriangle, ArrowRight, Plus, CheckCircle } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
 
@@ -134,39 +134,31 @@ export default function AdminDashboardPage() {
                         <CardTitle>Support Tickets</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-col items-center justify-center">
-                        <ResponsiveContainer width="100%" height={150}>
-                            <PieChart>
-                                <Pie 
-                                    data={ticketStatusData} 
-                                    cx="50%" 
-                                    cy="50%" 
-                                    innerRadius={50} 
-                                    outerRadius={70} 
-                                    startAngle={90} 
-                                    endAngle={450} 
-                                    paddingAngle={2}
-                                    dataKey="value"
-                                >
-                                     {ticketStatusData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.fill} stroke={entry.fill} />
-                                    ))}
-                                </Pie>
-                                <Tooltip
-                                    content={({ active, payload }) => {
-                                        if (active && payload && payload.length) {
-                                            return (
-                                                <div className="bg-background border p-2 rounded-lg shadow-lg">
-                                                    <p className="font-bold text-base">{`${payload[0].name}: ${payload[0].value}`}</p>
-                                                </div>
-                                            );
-                                        }
-                                        return null;
-                                    }}
-                                />
-                            </PieChart>
-                        </ResponsiveContainer>
-                        <p className="text-3xl font-bold mt-[-3.5rem] mb-2">23</p>
-                        <p className="text-sm text-muted-foreground">Open Tickets</p>
+                         <div className="relative h-[150px] w-[150px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie 
+                                        data={ticketStatusData} 
+                                        cx="50%" 
+                                        cy="50%" 
+                                        innerRadius={50} 
+                                        outerRadius={70} 
+                                        startAngle={90} 
+                                        endAngle={450} 
+                                        paddingAngle={2}
+                                        dataKey="value"
+                                    >
+                                        {ticketStatusData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.fill} stroke={entry.fill} />
+                                        ))}
+                                    </Pie>
+                                </PieChart>
+                            </ResponsiveContainer>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                <p className="text-3xl font-bold">23</p>
+                                <p className="text-sm text-muted-foreground">Open Tickets</p>
+                            </div>
+                        </div>
                         <div className="flex gap-4 mt-4 text-xs">
                              <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-primary"/>Closed</div>
                             <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-muted"/>Open</div>
