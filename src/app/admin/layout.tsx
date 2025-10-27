@@ -184,7 +184,7 @@ export default function AdminLayout({
             ))}
         </SidebarContent>
         <SidebarFooter>
-             <SidebarMenu>
+             <SidebarMenu className="flex items-center justify-center">
                 <SidebarMenuItem>
                   <button
                     onClick={handleLogout}
