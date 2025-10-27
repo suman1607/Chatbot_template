@@ -4,54 +4,76 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Users, CreditCard, DollarSign, Activity, AlertTriangle, CheckCircle, ArrowRight, LifeBuoy } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { Users, CreditCard, DollarSign, Activity, AlertTriangle, LifeBuoy, ArrowRight, Plus, CheckCircle } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Progress } from '@/components/ui/progress';
 
 const overviewStats = [
-    { title: "Total Users", value: "1,254", icon: <Users className="w-6 h-6 text-primary" />, change: "+12% this month" },
-    { title: "Active Subscriptions", value: "980", icon: <CreditCard className="w-6 h-6 text-green-500" />, change: "+5.2% this month" },
-    { title: "Monthly Recurring Revenue", value: "$12,450", icon: <DollarSign className="w-6 h-6 text-purple-500" />, change: "+8.1% this month" },
-    { title: "Open Support Tickets", value: "23", icon: <LifeBuoy className="w-6 h-6 text-orange-500" />, change: "-5 since yesterday" },
+    { title: "Total Users", value: "1,254", icon: <Users className="w-8 h-8 text-primary" />, change: "+12% this month", bgColor: "bg-orange-100" },
+    { title: "Active Subscriptions", value: "980", icon: <CreditCard className="w-8 h-8 text-green-500" />, change: "+5.2% this month", bgColor: "bg-green-100" },
+    { title: "Revenue", value: "$12,450", icon: <DollarSign className="w-8 h-8 text-purple-500" />, change: "+8.1% this month", bgColor: "bg-purple-100" },
+    { title: "Open Tickets", value: "23", icon: <LifeBuoy className="w-8 h-8 text-red-500" />, change: "-5", bgColor: "bg-red-100"},
 ];
 
-const revenueData = [
-  { name: 'Jan', revenue: 4000 },
-  { name: 'Feb', revenue: 3000 },
-  { name: 'Mar', revenue: 5000 },
-  { name: 'Apr', revenue: 4500 },
-  { name: 'May', revenue: 6000 },
-  { name: 'Jun', revenue: 5500 },
+const projectAnalyticsData = [
+  { name: 'S', value: 20 },
+  { name: 'M', value: 80 },
+  { name: 'T', value: 65, label: "65%" },
+  { name: 'W', value: 90 },
+  { name: 'T', value: 30 },
+  { name: 'F', value: 50 },
+  { name: 'S', value: 25 },
 ];
 
 const recentSignups = [
-    { name: "Innovate Inc.", plan: "Pro", signupDate: "2 hours ago" },
-    { name: "Creative Solutions", plan: "Starter", signupDate: "5 hours ago" },
-    { name: "Data Corp", plan: "Business", signupDate: "1 day ago" },
-    { name: "Market Wizards", plan: "Pro", signupDate: "2 days ago" },
+    { name: "Innovate Inc.", status: "Completed", avatar: "https://picsum.photos/seed/1/32/32" },
+    { name: "Creative Solutions", status: "In Progress", avatar: "https://picsum.photos/seed/2/32/32" },
+    { name: "Data Corp", status: "Pending", avatar: "https://picsum.photos/seed/3/32/32" },
+    { name: "Market Wizards", status: "In Progress", avatar: "https://picsum.photos/seed/4/32/32" },
+]
+
+const projectProgressData = [
+    { name: 'Completed', value: 41, fill: 'hsl(var(--primary))' },
+    { name: 'In Progress', value: 59, fill: 'hsl(var(--muted))' }
 ]
 
 const criticalAlerts = [
-    { text: "Payment failed for workspace 'Alpha Corp'", icon: <AlertTriangle className="w-5 h-5 text-red-500" /> },
-    { text: "Subscription for 'Beta LLC' expires in 3 days", icon: <AlertTriangle className="w-5 h-5 text-orange-500" /> },
-    { text: "New high-priority ticket from 'Gamma Ent.'", icon: <AlertTriangle className="w-5 h-5 text-yellow-500" /> },
+    { text: "Develop API Endpoints", dueDate: "Nov 26, 2024", icon: <CheckCircle className="w-5 h-5 text-blue-500" /> },
+    { text: "Onboarding Flow", dueDate: "Nov 28, 2024", icon: <CheckCircle className="w-5 h-5 text-purple-500" /> },
+    { text: "Build Dashboard", dueDate: "Nov 30, 2024", icon: <CheckCircle className="w-5 h-5 text-green-500" /> },
 ]
+
 
 export default function AdminDashboardPage() {
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
+            <div className="flex justify-between items-center">
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
+                    <p className="text-muted-foreground">Plan, prioritize, and accomplish your tasks with ease.</p>
+                </div>
+                <div>
+                    <Button variant="outline" className="mr-2">Import Data</Button>
+                    <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                        <Plus className="w-4 h-4 mr-2"/>
+                        Add Project
+                    </Button>
+                </div>
+            </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {overviewStats.map(stat => (
-                    <Card key={stat.title}>
+                    <Card key={stat.title} className={`${stat.title === "Total Users" ? 'bg-primary text-primary-foreground' : 'bg-card'}`}>
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium text-gray-600">{stat.title}</CardTitle>
-                            {stat.icon}
+                            <CardTitle className={`text-sm font-medium ${stat.title === "Total Users" ? 'text-primary-foreground/80' : 'text-gray-600'}`}>{stat.title}</CardTitle>
+                             <div className={`p-2 rounded-full ${stat.title !== "Total Users" ? stat.bgColor : 'bg-white/20'}`}>
+                                {React.cloneElement(stat.icon, { className: `w-5 h-5 ${stat.title === "Total Users" ? 'text-white' : ''}` })}
+                            </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{stat.value}</div>
-                            <p className="text-xs text-gray-500">{stat.change}</p>
+                            <div className="text-3xl font-bold">{stat.value}</div>
+                            <p className={`text-xs ${stat.title === "Total Users" ? 'text-primary-foreground/90' : 'text-gray-500'}`}>{stat.change}</p>
                         </CardContent>
                     </Card>
                 ))}
@@ -60,97 +82,132 @@ export default function AdminDashboardPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <Card className="lg:col-span-2">
                     <CardHeader>
-                        <CardTitle>Revenue Growth</CardTitle>
-                        <CardDescription>Monthly revenue over the last 6 months.</CardDescription>
+                        <CardTitle>Project Analytics</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <AreaChart data={revenueData}>
-                                <defs>
-                                    <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
-                                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-                                    </linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false}/>
+                        <ResponsiveContainer width="100%" height={250}>
+                            <BarChart data={projectAnalyticsData} barSize={20}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} />
                                 <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
-                                <YAxis fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `$${value/1000}k`} />
-                                <Tooltip />
-                                <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" fill="url(#revenueGradient)" strokeWidth={2} />
-                            </AreaChart>
+                                <YAxis hide={true} />
+                                <Tooltip
+                                    cursor={{fill: 'hsla(var(--primary), 0.1)', radius: 8}}
+                                    content={({ active, payload, label }) => {
+                                        if (active && payload && payload.length) {
+                                            return (
+                                                <div className="bg-background border p-2 rounded-lg shadow-lg">
+                                                    <p className="font-bold text-base">{`${label}: ${payload[0].value}%`}</p>
+                                                </div>
+                                            );
+                                        }
+                                        return null;
+                                    }}
+                                />
+                                <Bar dataKey="value" radius={[10, 10, 0, 0]}>
+                                    {projectAnalyticsData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={index === 2 || index === 3 ? 'hsl(var(--primary))' : 'hsl(var(--muted))'} />
+                                     ))}
+                                </Bar>
+                            </BarChart>
                         </ResponsiveContainer>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardHeader>
-                        <CardTitle>Critical Alerts</CardTitle>
-                        <CardDescription>Immediate attention required.</CardDescription>
+                        <CardTitle>Reminders</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        {criticalAlerts.map((alert, index) => (
-                            <div key={index} className="flex items-start gap-3">
-                                {alert.icon}
-                                <p className="text-sm text-gray-700">{alert.text}</p>
-                            </div>
-                        ))}
-                         <Button variant="outline" className="w-full mt-4">
-                            View All Alerts <ArrowRight className="ml-2 w-4 h-4" />
+                        <div className="p-4 bg-orange-50 border-l-4 border-primary rounded-r-lg">
+                            <h4 className="font-semibold">Meeting with Arc Company</h4>
+                            <p className="text-sm text-muted-foreground">Time: 02:00pm - 04:00pm</p>
+                        </div>
+                         <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
+                            Start Meeting
                          </Button>
                     </CardContent>
                 </Card>
             </div>
             
-             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card>
+             <div className="grid grid-cols-1 lg:grid-cols-7 gap-6">
+                <Card className="lg:col-span-3">
                     <CardHeader>
-                        <CardTitle>Recent Signups</CardTitle>
-                        <CardDescription>New workspaces on the platform.</CardDescription>
+                         <div className="flex justify-between items-center">
+                            <CardTitle>Team Collaboration</CardTitle>
+                            <Button variant="outline" size="sm"><Plus className="w-4 h-4 mr-1"/> Add Member</Button>
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Workspace</TableHead>
-                                    <TableHead>Plan</TableHead>
-                                    <TableHead>Signup Date</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {recentSignups.map(signup => (
-                                    <TableRow key={signup.name}>
-                                        <TableCell className="font-medium">{signup.name}</TableCell>
-                                        <TableCell>{signup.plan}</TableCell>
-                                        <TableCell>{signup.signupDate}</TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                        <div className="space-y-4">
+                        {recentSignups.map(signup => (
+                            <div key={signup.name} className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <img src={signup.avatar} alt={signup.name} className="w-9 h-9 rounded-full" />
+                                    <div>
+                                        <p className="font-semibold">{signup.name}</p>
+                                        <p className="text-xs text-muted-foreground">Working on Github Project</p>
+                                    </div>
+                                </div>
+                                <span className={`px-2 py-1 text-xs rounded-full ${
+                                    signup.status === 'Completed' ? 'bg-green-100 text-green-700' : 
+                                    signup.status === 'In Progress' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'
+                                }`}>{signup.status}</span>
+                            </div>
+                        ))}
+                        </div>
                     </CardContent>
                 </Card>
-                 <Card>
+                 <Card className="lg:col-span-2">
                     <CardHeader>
-                        <CardTitle>Recent Admin Activity</CardTitle>
-                        <CardDescription>Latest actions taken in the admin panel.</CardDescription>
+                        <CardTitle>Project Progress</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-3">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-gray-100 rounded-full"><CheckCircle className="w-4 h-4 text-green-600"/></div>
-                            <div>
-                                <p className="text-sm">You suspended workspace 'Old Project'.</p>
-                                <p className="text-xs text-gray-500">5 minutes ago</p>
-                            </div>
+                    <CardContent className="flex flex-col items-center justify-center">
+                        <ResponsiveContainer width="100%" height={150}>
+                            <PieChart>
+                                <Pie 
+                                    data={projectProgressData} 
+                                    cx="50%" 
+                                    cy="50%" 
+                                    innerRadius={50} 
+                                    outerRadius={70} 
+                                    startAngle={90} 
+                                    endAngle={450} 
+                                    paddingAngle={2}
+                                    dataKey="value"
+                                >
+                                     {projectProgressData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={entry.fill} stroke={entry.fill} />
+                                    ))}
+                                </Pie>
+                            </PieChart>
+                        </ResponsiveContainer>
+                        <p className="text-3xl font-bold mt-[-3.5rem] mb-2">41%</p>
+                        <p className="text-sm text-muted-foreground">Project Ended</p>
+                        <div className="flex gap-4 mt-4 text-xs">
+                             <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-primary"/>Completed</div>
+                            <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-muted"/>In Progress</div>
                         </div>
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-gray-100 rounded-full"><Activity className="w-4 h-4 text-primary"/></div>
-                            <div>
-                                <p className="text-sm">You impersonated user 'jane.doe@example.com'.</p>
-                                <p className="text-xs text-gray-500">1 hour ago</p>
-                            </div>
+                    </CardContent>
+                </Card>
+                <Card className="lg:col-span-2">
+                    <CardHeader>
+                        <div className="flex justify-between items-center">
+                            <CardTitle>Project</CardTitle>
+                             <Button variant="outline" size="sm"><Plus className="w-4 h-4 mr-1"/> New</Button>
                         </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {criticalAlerts.map((alert, index) => (
+                            <div key={index} className="flex items-start gap-3">
+                                {alert.icon}
+                                <div>
+                                    <p className="text-sm text-gray-800 font-medium">{alert.text}</p>
+                                    <p className="text-xs text-muted-foreground">Due date: {alert.dueDate}</p>
+                                </div>
+                            </div>
+                        ))}
                     </CardContent>
                 </Card>
             </div>
-
         </div>
     );
 }
