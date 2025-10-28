@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "CreatorDashboard": {
@@ -496,6 +497,51 @@
         "description",
         "createdAt"
       ]
+    },
+    "Workspace": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Workspace",
+      "type": "object",
+      "description": "Represents a user's workspace, containing settings and configurations.",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "The UID of the user who owns the workspace."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the workspace."
+        },
+        "widgetSettings": {
+          "type": "object",
+          "description": "Configuration for the chat widget appearance.",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "brandColor": {
+              "type": "string"
+            },
+            "welcomeMessage": {
+              "type": "string"
+            },
+            "showBranding": {
+              "type": "boolean"
+            }
+          }
+        },
+        "whitelistedDomains": {
+          "type": "array",
+          "description": "A list of domains where the widget is allowed to be embedded.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ownerId",
+        "name"
+      ]
     }
   },
   "auth": {
@@ -518,6 +564,22 @@
             {
               "name": "userId",
               "description": "The unique identifier of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/workspaces/{workspaceId}",
+        "definition": {
+          "entityName": "Workspace",
+          "schema": {
+            "$ref": "#/backend/entities/Workspace"
+          },
+          "description": "Stores workspace settings. The workspaceId is the same as the owner's userId.",
+          "params": [
+            {
+              "name": "workspaceId",
+              "description": "The unique identifier of the workspace, same as the user's UID."
             }
           ]
         }

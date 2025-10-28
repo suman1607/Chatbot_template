@@ -2,17 +2,13 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Palette,
-  MessageSquare,
   Settings,
   Code,
-  Link,
   Plus,
   Trash2,
-  UploadCloud,
-  ChevronDown,
   Monitor,
   Smartphone,
   Eye,
@@ -29,26 +25,15 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion"
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc, setDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+
 
 const WidgetPreview = ({ settings, isMobile, chatOpen, setChatOpen }: any) => {
     
@@ -63,7 +48,7 @@ const WidgetPreview = ({ settings, isMobile, chatOpen, setChatOpen }: any) => {
                    chatOpen ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
                 )}
                 style={{ 
-                    backgroundColor: settings.color,
+                    backgroundColor: settings.brandColor,
                     bottom: '1rem',
                     right: '1rem'
                 }}
@@ -79,7 +64,7 @@ const WidgetPreview = ({ settings, isMobile, chatOpen, setChatOpen }: any) => {
                     ? 'opacity-100 transform scale-100 translate-y-0' 
                     : 'opacity-0 transform scale-95 translate-y-4 pointer-events-none'
              )}>
-                 <div className="p-4 flex items-center justify-between text-white" style={{ backgroundColor: settings.color, borderTopLeftRadius: '0.5rem', borderTopRightRadius: '0.5rem' }}>
+                 <div className="p-4 flex items-center justify-between text-white" style={{ backgroundColor: settings.brandColor, borderTopLeftRadius: '0.5rem', borderTopRightRadius: '0.5rem' }}>
                      <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-white/30 flex items-center justify-center">
                             <Bot className="w-6 h-6"/>
@@ -104,13 +89,13 @@ const WidgetPreview = ({ settings, isMobile, chatOpen, setChatOpen }: any) => {
                  <div className="p-4 border-t">
                      <div className="relative">
                          <Input placeholder="Type your message..." className="pr-10"/>
-                         <button className="absolute right-2 top-1/2 -translate-y-1/2" style={{color: settings.color}}>
+                         <button className="absolute right-2 top-1/2 -translate-y-1/2" style={{color: settings.brandColor}}>
                              <Send className="w-5 h-5"/>
                          </button>
                      </div>
                  </div>
                  {settings.showBranding && (
-                    <div className="py-2 px-4 border-t">
+                    <div className="py-2 px-4 border-t text-center">
                         <a href="#" className="flex items-center justify-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors">
                             <MessageSquare className="w-3.5 h-3.5"/>
                             <span>Powered by <strong>ChatGenius</strong></span>
@@ -123,48 +108,97 @@ const WidgetPreview = ({ settings, isMobile, chatOpen, setChatOpen }: any) => {
 }
 
 export default function WidgetsPage() {
+    const { user } = useUser();
+    const firestore = useFirestore();
+    const workspaceId = user?.uid; // Assuming user uid is the workspace id
+
+    // Fetch workspace data
+    const workspaceRef = useMemoFirebase(() => workspaceId ? doc(firestore, 'workspaces', workspaceId) : null, [firestore, workspaceId]);
+    const { data: workspaceData, isLoading } = useDoc(workspaceRef);
+
     const [settings, setSettings] = useState({
         name: "My First Widget",
-        color: '#F97316',
+        brandColor: '#F97316',
         welcomeMessage: 'Hello! How can we help you today?',
         showBranding: true,
     });
     const [isMobilePreview, setIsMobilePreview] = useState(false);
     const [chatOpen, setChatOpen] = useState(true);
-    const [domain, setDomain] = useState('');
-    const [whitelistedDomains, setWhitelistedDomains] = useState(['example.com']);
+    const [domainInput, setDomainInput] = useState('');
+    const [whitelistedDomains, setWhitelistedDomains] = useState<string[]>([]);
     const [installationCode, setInstallationCode] = useState('');
     const { toast } = useToast();
+
+    // Effect to update local state when firestore data loads
+    useEffect(() => {
+        if (workspaceData) {
+            setSettings(s => ({ ...s, ...workspaceData.widgetSettings }));
+            setWhitelistedDomains(workspaceData.whitelistedDomains || []);
+        }
+    }, [workspaceData]);
     
     useEffect(() => {
-        const origin = window.location.origin;
+        const origin = typeof window !== 'undefined' ? window.location.origin : 'https://your-deployed-site.com';
         const installationInstructions = `<!-- ChatGenius Widget -->
 <script src="${origin}/widget.js" async defer></script>
 <script>
   window.addEventListener('load', () => {
     if (window.ChatGenius) {
       window.ChatGenius.init({
-        brandColor: '${settings.color}',
+        workspaceId: '${workspaceId}',
+        brandColor: '${settings.brandColor}',
         welcomeMessage: '${settings.welcomeMessage}',
-        // ... other settings
+        showBranding: ${settings.showBranding}
       });
     }
   });
 </script>
 <!-- End ChatGenius Widget -->`;
         setInstallationCode(installationInstructions);
-    }, [settings]);
+    }, [settings, workspaceId]);
 
     const handleSettingChange = (key: string, value: any) => {
         setSettings(prev => ({ ...prev, [key]: value }));
     }
 
-    const addDomain = () => {
-        if(domain && !whitelistedDomains.includes(domain)) {
-            setWhitelistedDomains([...whitelistedDomains, domain]);
-            setDomain('');
+    const saveSettings = useCallback(async () => {
+        if (!workspaceRef) return;
+        try {
+            await updateDoc(workspaceRef, { widgetSettings: settings });
+            toast({ title: 'Success!', description: 'Widget settings have been saved.' });
+        } catch (error) {
+            toast({ variant: 'destructive', title: 'Error!', description: 'Failed to save settings.' });
         }
-    }
+    }, [workspaceRef, settings, toast]);
+
+    const addDomain = useCallback(async () => {
+        if (domainInput && workspaceRef && !whitelistedDomains.includes(domainInput)) {
+            try {
+                await updateDoc(workspaceRef, {
+                    whitelistedDomains: arrayUnion(domainInput)
+                });
+                setWhitelistedDomains(prev => [...prev, domainInput]);
+                setDomainInput('');
+                toast({ title: 'Domain added!' });
+            } catch (error) {
+                toast({ variant: 'destructive', title: 'Error!', description: 'Failed to add domain.' });
+            }
+        }
+    }, [domainInput, workspaceRef, whitelistedDomains, toast]);
+    
+    const removeDomain = useCallback(async (domainToRemove: string) => {
+        if (workspaceRef) {
+             try {
+                await updateDoc(workspaceRef, {
+                    whitelistedDomains: arrayRemove(domainToRemove)
+                });
+                setWhitelistedDomains(prev => prev.filter(d => d !== domainToRemove));
+                toast({ title: 'Domain removed.' });
+            } catch (error) {
+                toast({ variant: 'destructive', title: 'Error!', description: 'Failed to remove domain.' });
+            }
+        }
+    }, [workspaceRef, toast]);
     
     const copyToClipboard = () => {
         navigator.clipboard.writeText(installationCode).then(() => {
@@ -173,6 +207,10 @@ export default function WidgetsPage() {
                 description: 'The installation code has been copied.',
             });
         });
+    }
+
+    if (isLoading) {
+        return <div>Loading...</div>
     }
 
   return (
@@ -200,8 +238,8 @@ export default function WidgetsPage() {
                         <div>
                             <label className="text-sm font-medium">Brand Color</label>
                             <div className="relative">
-                                <Input type="text" value={settings.color} onChange={(e) => handleSettingChange('color', e.target.value)} className="pl-10"/>
-                                <input type="color" value={settings.color} onChange={(e) => handleSettingChange('color', e.target.value)} className="absolute left-2 top-1/2 -translate-y-1/2 w-6 h-6 appearance-none bg-transparent border-none cursor-pointer"/>
+                                <Input type="text" value={settings.brandColor} onChange={(e) => handleSettingChange('brandColor', e.target.value)} className="pl-10"/>
+                                <input type="color" value={settings.brandColor} onChange={(e) => handleSettingChange('brandColor', e.target.value)} className="absolute left-2 top-1/2 -translate-y-1/2 w-6 h-6 appearance-none bg-transparent border-none cursor-pointer"/>
                             </div>
                         </div>
                          <div>
@@ -212,6 +250,7 @@ export default function WidgetsPage() {
                             <span className="text-sm font-medium">Show "Powered by" branding</span>
                             <Switch checked={settings.showBranding} onCheckedChange={(checked) => handleSettingChange('showBranding', checked)} />
                         </div>
+                        <Button onClick={saveSettings}>Save Appearance</Button>
                     </CardContent>
                 </Card>
 
@@ -240,7 +279,7 @@ export default function WidgetsPage() {
                              <TabsContent value="domains" className="mt-4">
                                 <p className="text-sm text-muted-foreground mb-2">Add domains where you want the widget to appear.</p>
                                 <div className="flex gap-2 mb-4">
-                                    <Input placeholder="example.com" value={domain} onChange={(e) => setDomain(e.target.value)}/>
+                                    <Input placeholder="example.com" value={domainInput} onChange={(e) => setDomainInput(e.target.value)}/>
                                     <Button onClick={addDomain} className="bg-primary hover:bg-primary/90 text-primary-foreground">Add</Button>
                                 </div>
                                 <div className="space-y-2">
@@ -249,7 +288,7 @@ export default function WidgetsPage() {
                                             <p className="font-medium text-sm">{d}</p>
                                             <div className="flex items-center gap-2">
                                                 <Badge variant="outline" className="text-green-600 border-green-200">Active</Badge>
-                                                <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => setWhitelistedDomains(whitelistedDomains.filter(item => item !== d))}>
+                                                <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => removeDomain(d)}>
                                                     <Trash2 className="w-4 h-4 text-red-500"/>
                                                 </Button>
                                             </div>
@@ -290,3 +329,4 @@ export default function WidgetsPage() {
     </div>
   );
 }
+
