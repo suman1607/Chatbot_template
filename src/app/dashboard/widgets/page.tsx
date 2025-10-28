@@ -136,8 +136,10 @@ export default function WidgetsPage() {
     const [installationCode, setInstallationCode] = useState('');
     const { toast } = useToast();
     
-    const installationInstructions = `<!-- ChatGenius Widget -->
-<script src="http://localhost:9002/widget.js" async defer></script>
+    useEffect(() => {
+        const origin = window.location.origin;
+        const installationInstructions = `<!-- ChatGenius Widget -->
+<script src="${origin}/widget.js" async defer></script>
 <script>
   window.addEventListener('load', () => {
     if (window.ChatGenius) {
@@ -150,10 +152,8 @@ export default function WidgetsPage() {
   });
 </script>
 <!-- End ChatGenius Widget -->`;
-    
-    useEffect(() => {
         setInstallationCode(installationInstructions);
-    }, [settings, installationInstructions])
+    }, [settings]);
 
     const handleSettingChange = (key: string, value: any) => {
         setSettings(prev => ({ ...prev, [key]: value }));
@@ -290,7 +290,3 @@ export default function WidgetsPage() {
     </div>
   );
 }
-
-
-
-
