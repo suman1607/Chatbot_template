@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useRef } from 'react';
 import {
   Book,
   Bot,
@@ -75,7 +75,7 @@ export default function AiTrainingPage() {
   const [knowledgeBaseData, setKnowledgeBaseData] = useState(initialKnowledgeBase);
   const [isDragging, setIsDragging] = useState(false);
   const { toast } = useToast();
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const startTraining = () => {
     setIsTraining(true);
@@ -87,7 +87,6 @@ export default function AiTrainingPage() {
           setIsTraining(false);
           toast({ title: "Training Complete", description: "Your AI has been updated with the new knowledge." });
           
-          // Update the status of pending items to "Trained"
           setKnowledgeBaseData(currentData => 
             currentData.map(item => 
               item.status === 'Pending' || item.status === 'Uploading' ? { ...item, status: 'Trained', progress: 100 } : item
@@ -153,7 +152,9 @@ export default function AiTrainingPage() {
     setIsDragging(false);
     const files = e.dataTransfer.files;
     if (files && files.length > 0) {
-        handleFileUpload(files[0]);
+        for(let i = 0; i < files.length; i++) {
+            handleFileUpload(files[i]);
+        }
     }
   }, [handleFileUpload]);
 
@@ -197,7 +198,7 @@ export default function AiTrainingPage() {
                             <TabsTrigger value="text"><ClipboardType className="w-4 h-4 mr-2"/>Paste Text</TabsTrigger>
                         </TabsList>
                         <TabsContent value="upload">
-                            <input type="file" ref={fileInputRef} onChange={onFileChange} className="hidden" accept=".pdf,.docx,.txt,.csv" />
+                            <input type="file" ref={fileInputRef} onChange={onFileChange} className="hidden" accept=".pdf,.docx,.txt,.csv" multiple />
                              <div 
                                 className={`p-6 border-2 border-dashed rounded-lg text-center flex flex-col items-center justify-center h-40 cursor-pointer transition-colors ${isDragging ? 'bg-orange-50 border-primary' : 'bg-gray-50'}`}
                                 onClick={() => fileInputRef.current?.click()}
@@ -375,5 +376,4 @@ export default function AiTrainingPage() {
       </div>
     </div>
   );
-
-    
+}
