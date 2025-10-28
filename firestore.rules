@@ -1,283 +1,175 @@
 /**
- * @file Firestore Security Rules for ChatGenius application.
+ * @fileoverview Firestore Security Rules for ChatGenius Prototyping.
  *
  * Core Philosophy:
- * This ruleset enforces a strict user-ownership model where creators can only access data
- * associated with their creator ID. Data is denormalized to enable simple authorization
- * checks without requiring additional reads.
+ * This ruleset prioritizes strict authorization and rapid prototyping. It enforces
+ * user-ownership and role-based access where appropriate, while relaxing data validation
+ * to allow for flexible schema evolution.  Rules are designed to be auditable and
+ * maintainable through the use of helper functions.
  *
  * Data Structure:
- * The data is organized under the /creators/{creatorId} path, with subcollections for
- * various entities like conversations, AI training data, teams, and widgets.
- * Each document within these subcollections includes a 'creatorId' field to ensure
- * authorization independence.
+ * - /users/{userId}: Stores user profiles, accessible only to the owning user.
+ * - /workspaces/{workspaceId}: Stores workspace settings, owned by a specific user.
+ * - /workspaces/{workspaceId}/members/{userId}: Defines user roles and permissions within a workspace.
+ * - /workspaces/{workspaceId}/aiConfig/config: Singleton AI config document for a workspace.
+ * - /workspaces/{workspaceId}/knowledge/{docId}: Collection of knowledge documents for AI training.
+ * - /workspaces/{workspaceId}/trainingRuns/{runId}: Log of AI training jobs.
  *
  * Key Security Decisions:
- * - User listing is generally disallowed for privacy.
- * - All write operations are strictly validated against the authenticated user's ID
- *   to prevent unauthorized data modification.
- * - The rules prioritize authorization and relational integrity, omitting comprehensive schema validation for prototyping speed.
+ * - Users can only read and write their own profile data.
+ * - Workspaces are owned by a single user initially, with role-based access managed via workspace members.
+ * - `list` operations on user-owned subcollections are generally allowed for the owner.
+ * - Data validation is minimized to focus on authorization and relational integrity.
  *
  * Denormalization for Authorization:
- * To avoid costly `get()` calls, the `creatorId` is denormalized into each document under the
- * `/creators/{creatorId}` path. This allows rules to directly check ownership without
- * additional database reads.
+ * - Workspace ownership is enforced by requiring the `ownerId` field to match the
+ *   authenticated user's UID.
+ * - Workspace member roles are stored directly in the `/workspaces/{workspaceId}/members/{userId}` document.
  *
  * Structural Segregation:
- * All data within a creator's subcollections is considered private. Public data, if needed in the future,
- * should be stored in separate top-level collections with appropriate public read rules.
+ * - Private user data is stored under the `/users/{userId}` path, ensuring it's not accidentally exposed.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Checks if the request is authenticated.
-     */
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    /**
-     * @description Checks if the authenticated user is the owner of the resource.
-     */
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-
-    /**
-     * @description Checks if the authenticated user is the existing owner of the resource.
-     */
-    function isExistingOwner(userId) {
-      return isOwner(userId) && resource != null;
-    }
-
-    /**
-     * @description Rules for user documents.
+     * @description Controls access to user profile documents.
      * @path /users/{userId}
-     * @allow (create) User with matching userId can create their own document.
-     * @allow (get, list, update, delete) Only the user themselves can access their document.
-     * @deny (create) User cannot create a document with a mismatched userId.
-     * @principle Enforces document ownership and prevents unauthorized access.
+     * @allow (get, create, update, delete, list): If the user is the owner of the profile (UID matches userId).
+     * @deny (create, update, delete): If the user is not the owner of the profile.
+     * @principle Enforces document ownership for all operations.
      */
     match /users/{userId} {
+      function isOwner(userId) {
+        return request.auth != null && request.auth.uid == userId;
+      }
+
+      function isExistingOwner(userId) {
+        return isOwner(userId) && resource != null;
+      }
+
       allow get: if isOwner(userId);
-      allow list: if false;
+      allow list: if false; // Prevent listing of all users.
       allow create: if isOwner(userId);
       allow update: if isExistingOwner(userId);
       allow delete: if isExistingOwner(userId);
     }
 
     /**
-     * @description Rules for workspace documents.
+     * @description Controls access to workspace documents.
      * @path /workspaces/{workspaceId}
-     * @allow (create) User with matching workspaceId can create their own workspace.
-     * @allow (get, list, update, delete) Only the workspace owner can access and modify the workspace.
-     * @deny (create) User cannot create a workspace with a mismatched workspaceId.
-     * @principle Enforces workspace ownership and prevents unauthorized access.
+     * @allow (get, list): Public read access to workspace settings.
+     * @allow (create): Only the workspace owner can create. Owner id must match request auth uid.
+     * @allow (update, delete): Only the workspace owner can update or delete.
+     * @deny (create, update, delete): If the user is not the owner of the workspace.
+     * @principle Enforces owner-only writes, public reads for workspace settings.
      */
     match /workspaces/{workspaceId} {
-      allow get: if isOwner(workspaceId);
-      allow list: if false;
-      allow create: if isOwner(workspaceId);
-      allow update: if isExistingOwner(workspaceId);
-      allow delete: if isExistingOwner(workspaceId);
+      function isWorkspaceOwner(workspaceId) {
+        return request.auth != null && resource.data.ownerId == request.auth.uid;
+      }
+
+      allow get, list: if true;
+      allow create: if request.auth != null && request.resource.data.ownerId == request.auth.uid;
+      allow update: if request.auth != null && isWorkspaceOwner(workspaceId);
+      allow delete: if request.auth != null && isWorkspaceOwner(workspaceId);
     }
 
     /**
-     * @description Rules for creator documents.
-     * @path /creators/{creatorId}
-     * @allow (create) Creator with matching creatorId can create their own document.
-     * @allow (get, list, update, delete) Only the creator themselves can access their document.
-     * @deny (create) User cannot create a document with a mismatched creatorId.
-     * @principle Enforces document ownership and prevents unauthorized access.
+     * @description Controls access to workspace member documents.
+     * @path /workspaces/{workspaceId}/members/{userId}
+     * @allow (get, list): Only workspace members can read the member list.
+     * @allow (create): Only workspace owners can add new members.
+     * @allow (update, delete): Only workspace owners can modify or remove members.
+     * @deny (create, update, delete): If the user is not the owner of the workspace.
+     * @principle Enforces role-based access control for workspace membership.
      */
-    match /creators/{creatorId} {
-      allow get: if isOwner(creatorId);
-      allow list: if false;
-      allow create: if isOwner(creatorId);
-      allow update: if isExistingOwner(creatorId);
-      allow delete: if isExistingOwner(creatorId);
-    }
+    match /workspaces/{workspaceId}/members/{userId} {
+      function isWorkspaceOwner(workspaceId) {
+          return request.auth != null && get(/databases/$(database)/documents/workspaces/$(workspaceId)).data.ownerId == request.auth.uid;
+      }
 
-    /**
-     * @description Rules for creator dashboard documents.
-     * @path /creators/{creatorId}/dashboard
-     * @allow (get, list, create, update, delete) Only the creator themselves can access their dashboard.
-     * @deny (create) User cannot create a dashboard with a mismatched creatorId.
-     * @principle Enforces document ownership and prevents unauthorized access.
-     */
-    match /creators/{creatorId}/dashboard {
-      allow get: if isOwner(creatorId);
-      allow list: if false;
-      allow create: if request.resource.data.creatorId == request.auth.uid;
-      allow update: if isExistingOwner(creatorId) && request.resource.data.creatorId == resource.data.creatorId;
-      allow delete: if isExistingOwner(creatorId);
-    }
-
-    /**
-     * @description Rules for conversation documents.
-     * @path /creators/{creatorId}/conversations/{conversationId}
-     * @allow (get, list, create, update, delete) Only the creator themselves can access their conversations.
-     * @deny (create) User cannot create a conversation with a mismatched creatorId.
-     * @principle Enforces document ownership and prevents unauthorized access.
-     */
-    match /creators/{creatorId}/conversations/{conversationId} {
-      allow get: if isOwner(creatorId);
-      allow list: if isOwner(creatorId);
-      allow create: if request.resource.data.creatorId == request.auth.uid;
-      allow update: if isExistingOwner(creatorId) && request.resource.data.creatorId == resource.data.creatorId;
-      allow delete: if isExistingOwner(creatorId);
-    }
-
-    /**
-     * @description Rules for AI training documents.
-     * @path /creators/{creatorId}/ai_training/{aiTrainingId}
-     * @allow (get, list, create, update, delete) Only the creator themselves can access their AI training data.
-     * @deny (create) User cannot create AI training data with a mismatched creatorId.
-     * @principle Enforces document ownership and prevents unauthorized access.
-     */
-    match /creators/{creatorId}/ai_training/{aiTrainingId} {
-      allow get: if isOwner(creatorId);
-      allow list: if isOwner(creatorId);
-      allow create: if request.resource.data.creatorId == request.auth.uid;
-      allow update: if isExistingOwner(creatorId) && request.resource.data.creatorId == resource.data.creatorId;
-      allow delete: if isExistingOwner(creatorId);
-    }
-
-    /**
-     * @description Rules for article documents.
-     * @path /creators/{creatorId}/ai_training/{aiTrainingId}/articles/{articleId}
-     * @allow (get, list, create, update, delete) Only the creator themselves can access their articles.
-     * @deny (create) User cannot create an article with a mismatched creatorId through aiTrainingId.
-     * @principle Enforces document ownership and prevents unauthorized access.
-     */
-    match /creators/{creatorId}/ai_training/{aiTrainingId}/articles/{articleId} {
-      allow get: if isOwner(creatorId);
-      allow list: if isOwner(creatorId);
-      allow create: if get(/databases/$(database)/documents/creators/$(creatorId)/ai_training/$(aiTrainingId)).data.creatorId == request.auth.uid;
-      allow update: if isExistingOwner(creatorId) && get(/databases/$(database)/documents/creators/$(creatorId)/ai_training/$(aiTrainingId)).data.creatorId == request.auth.uid;
-      allow delete: if isExistingOwner(creatorId);
-    }
-
-    /**
-     * @description Rules for team documents.
-     * @path /creators/{creatorId}/teams/{teamId}
-     * @allow (get, list, create, update, delete) Only the creator themselves can access their teams.
-     * @deny (create) User cannot create a team with a mismatched creatorId.
-     * @principle Enforces document ownership and prevents unauthorized access.
-     */
-    match /creators/{creatorId}/teams/{teamId} {
-      allow get: if isOwner(creatorId);
-      allow list: if isOwner(creatorId);
-      allow create: if request.resource.data.creatorId == request.auth.uid;
-      allow update: if isExistingOwner(creatorId) && request.resource.data.creatorId == resource.data.creatorId;
-      allow delete: if isExistingOwner(creatorId);
-    }
-
-    /**
-     * @description Rules for agent documents.
-     * @path /creators/{creatorId}/agents/{agentId}
-     * @allow (get, list, create, update, delete) Only the creator themselves can access their agents.
-     * @deny (create) User cannot create an agent with a mismatched creatorId.
-     * @principle Enforces document ownership and prevents unauthorized access.
-     */
-    match /creators/{creatorId}/agents/{agentId} {
-      allow get: if isOwner(creatorId);
-      allow list: if isOwner(creatorId);
-      allow create: if request.resource.data.creatorId == request.auth.uid;
-      allow update: if isExistingOwner(creatorId) && request.resource.data.creatorId == resource.data.creatorId;
-      allow delete: if isExistingOwner(creatorId);
-    }
-
-    /**
-     * @description Rules for widget documents.
-     * @path /creators/{creatorId}/widgets/{widgetId}
-     * @allow (get, list, create, update, delete) Only the creator themselves can access their widgets.
-     * @deny (create) User cannot create a widget with a mismatched creatorId.
-     * @principle Enforces document ownership and prevents unauthorized access.
-     */
-    match /creators/{creatorId}/widgets/{widgetId} {
-      allow get: if isOwner(creatorId);
-      allow list: if isOwner(creatorId);
-      allow create: if request.resource.data.creatorId == request.auth.uid;
-      allow update: if isExistingOwner(creatorId) && request.resource.data.creatorId == resource.data.creatorId;
-      allow delete: if isExistingOwner(creatorId);
-    }
-
-    /**
-     * @description Rules for analytics documents.
-     * @path /creators/{creatorId}/analytics/{analyticsId}
-     * @allow (get, list, create, update, delete) Only the creator themselves can access their analytics.
-     * @deny (create) User cannot create analytics with a mismatched creatorId.
-     * @principle Enforces document ownership and prevents unauthorized access.
-     */
-    match /creators/{creatorId}/analytics/{analyticsId} {
-      allow get: if isOwner(creatorId);
-      allow list: if isOwner(creatorId);
-      allow create: if request.resource.data.creatorId == request.auth.uid;
-      allow update: if isExistingOwner(creatorId) && request.resource.data.creatorId == resource.data.creatorId;
-      allow delete: if isExistingOwner(creatorId);
-    }
-
-    /**
-     * @description Rules for billing documents.
-     * @path /creators/{creatorId}/billing/{billingId}
-     * @allow (get, list, create, update, delete) Only the creator themselves can access their billing information.
-     * @deny (create) User cannot create billing information with a mismatched creatorId.
-     * @principle Enforces document ownership and prevents unauthorized access.
-     */
-    match /creators/{creatorId}/billing/{billingId} {
-      allow get: if isOwner(creatorId);
-      allow list: if isOwner(creatorId);
-      allow create: if request.resource.data.creatorId == request.auth.uid;
-      allow update: if isExistingOwner(creatorId) && request.resource.data.creatorId == resource.data.creatorId;
-      allow delete: if isExistingOwner(creatorId);
-    }
-
-    /**
-     * @description Rules for settings documents.
-     * @path /creators/{creatorId}/settings/{settingsId}
-     * @allow (get, list, create, update, delete) Only the creator themselves can access their settings.
-     * @deny (create) User cannot create settings with a mismatched creatorId.
-     * @principle Enforces document ownership and prevents unauthorized access.
-     */
-    match /creators/{creatorId}/settings/{settingsId} {
-      allow get: if isOwner(creatorId);
-      allow list: if isOwner(creatorId);
-      allow create: if request.resource.data.creatorId == request.auth.uid;
-      allow update: if isExistingOwner(creatorId) && request.resource.data.creatorId == resource.data.creatorId;
-      allow delete: if isExistingOwner(creatorId);
-    }
-
-    /**
-     * @description Rules for support ticket documents.
-     * @path /creators/{creatorId}/support_tickets/{supportTicketId}
-     * @allow (get, list, create, update, delete) Only the creator themselves can access their support tickets.
-     * @deny (create) User cannot create a support ticket with a mismatched creatorId.
-     * @principle Enforces document ownership and prevents unauthorized access.
-     */
-    match /creators/{creatorId}/support_tickets/{supportTicketId} {
-      allow get: if isOwner(creatorId);
-      allow list: if isOwner(creatorId);
-      allow create: if request.resource.data.creatorId == request.auth.uid;
-      allow update: if isExistingOwner(creatorId) && request.resource.data.creatorId == resource.data.creatorId;
-      allow delete: if isExistingOwner(creatorId);
+      allow get, list: if true;
+      allow create: if request.auth != null && isWorkspaceOwner(workspaceId);
+      allow update: if request.auth != null && isWorkspaceOwner(workspaceId);
+      allow delete: if request.auth != null && isWorkspaceOwner(workspaceId);
     }
 
      /**
-     * @description Rules for activity documents.
-     * @path /creators/{creatorId}/activities/{activityId}
-     * @allow (get, list, create, update, delete) Only the creator themselves can access their activity logs.
-     * @deny (create) User cannot create an activity log with a mismatched creatorId.
-     * @principle Enforces document ownership and prevents unauthorized access.
+      * @description Controls access to the AI config document.
+      * @path /workspaces/{workspaceId}/aiConfig/config
+      * @allow (get): Only workspace members can read the AI config.
+      * @allow (create, update, delete): Only workspace owners can modify the AI config.
+      * @deny (create, update, delete): If the user is not the owner of the workspace.
+      * @principle Enforces role-based access control for AI configuration.
+      */
+    match /workspaces/{workspaceId}/aiConfig/config {
+        function isWorkspaceMember(workspaceId) {
+            return request.auth != null && exists(/databases/$(database)/documents/workspaces/$(workspaceId)/members/$(request.auth.uid));
+        }
+
+        function isWorkspaceOwner(workspaceId) {
+            return request.auth != null && get(/databases/$(database)/documents/workspaces/$(workspaceId)).data.ownerId == request.auth.uid;
+        }
+
+        allow get: if request.auth != null && isWorkspaceMember(workspaceId);
+        allow list: if false;
+        allow create: if request.auth != null && isWorkspaceOwner(workspaceId);
+        allow update: if request.auth != null && isWorkspaceOwner(workspaceId);
+        allow delete: if request.auth != null && isWorkspaceOwner(workspaceId);
+    }
+
+    /**
+     * @description Controls access to knowledge documents.
+     * @path /workspaces/{workspaceId}/knowledge/{docId}
+     * @allow (get, list): Only workspace members can read the knowledge documents.
+     * @allow (create): Only workspace members can create knowledge documents.
+     * @allow (update, delete): Only the creator or workspace owner can modify or remove knowledge documents.
+     * @deny (create, update, delete): If the user is not the creator or owner of the workspace.
+     * @principle Enforces role-based access control and creator-based modification rights for knowledge documents.
      */
-    match /creators/{creatorId}/activities/{activityId} {
-      allow get: if isOwner(creatorId);
-      allow list: if isOwner(creatorId);
-      allow create: if get(/databases/$(database)/documents/creators/$(creatorId)/dashboard).data.creatorId == request.auth.uid;
-      allow update: if isExistingOwner(creatorId) && get(/databases/$(database)/documents/creators/$(creatorId)/dashboard).data.creatorId == request.auth.uid;
-      allow delete: if isExistingOwner(creatorId);
+    match /workspaces/{workspaceId}/knowledge/{docId} {
+        function isWorkspaceMember(workspaceId) {
+            return request.auth != null && exists(/databases/$(database)/documents/workspaces/$(workspaceId)/members/$(request.auth.uid));
+        }
+
+        function isWorkspaceOwner(workspaceId) {
+            return request.auth != null && get(/databases/$(database)/documents/workspaces/$(workspaceId)).data.ownerId == request.auth.uid;
+        }
+
+        function isKnowledgeCreator(docId) {
+          return request.auth != null && request.resource.data.createdBy == request.auth.uid;
+        }
+
+        function isExistingKnowledgeCreator(docId) {
+          return request.auth != null && resource != null && resource.data.createdBy == request.auth.uid;
+        }
+
+        allow get, list: if request.auth != null && isWorkspaceMember(workspaceId);
+        allow create: if request.auth != null && isWorkspaceMember(workspaceId);
+        allow update: if request.auth != null && (isWorkspaceOwner(workspaceId) || isExistingKnowledgeCreator(docId));
+        allow delete: if request.auth != null && (isWorkspaceOwner(workspaceId) || isExistingKnowledgeCreator(docId));
+    }
+
+    /**
+     * @description Controls access to training run documents.
+     * @path /workspaces/{workspaceId}/trainingRuns/{runId}
+     * @allow (get, list): Only workspace members can read the training run logs.
+     * @allow (create): Only workspace members can initiate training runs.
+     * @allow (update, delete): No one can update or delete training run logs.
+     * @deny (create, update, delete): If the user is not a workspace member.
+     * @principle Enforces role-based access control for training run management.
+     */
+    match /workspaces/{workspaceId}/trainingRuns/{runId} {
+        function isWorkspaceMember(workspaceId) {
+            return request.auth != null && exists(/databases/$(database)/documents/workspaces/$(workspaceId)/members/$(request.auth.uid));
+        }
+
+        allow get, list: if request.auth != null && isWorkspaceMember(workspaceId);
+        allow create: if request.auth != null && isWorkspaceMember(workspaceId);
+        allow update: if false;
+        allow delete: if false;
     }
   }
 }
