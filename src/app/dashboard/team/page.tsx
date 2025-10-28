@@ -60,6 +60,8 @@ import {
   Mail,
   UserPlus,
   Info,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
@@ -113,7 +115,10 @@ export default function TeamPage() {
     const [pendingInvites, setPendingInvites] = useState(initialPendingInvites);
     const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
     const [inviteEmail, setInviteEmail] = useState('');
+    const [inviteName, setInviteName] = useState('');
+    const [invitePassword, setInvitePassword] = useState('');
     const [inviteRole, setInviteRole] = useState('Agent');
+    const [showPassword, setShowPassword] = useState(false);
     const { toast } = useToast();
 
     const filteredMembers = teamMembers.filter(member =>
@@ -121,28 +126,44 @@ export default function TeamPage() {
         member.email.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const handleSendInvitation = () => {
-        if (!inviteEmail) {
+    const handleCreateMember = () => {
+        if (!inviteEmail || !inviteName || !invitePassword) {
             toast({
                 variant: "destructive",
-                title: "Email required",
-                description: "Please enter an email address to send an invitation.",
+                title: "Missing Fields",
+                description: "Please fill out all fields to create a new member.",
+            });
+            return;
+        }
+        
+        if (teamMembers.some(member => member.email === inviteEmail)) {
+             toast({
+                variant: "destructive",
+                title: "User Exists",
+                description: "This user is already a team member.",
             });
             return;
         }
 
-        const newInvite = {
+        const newMember = {
+            name: inviteName,
             email: inviteEmail,
             role: inviteRole,
-            invited: 'Just now'
+            status: 'Online',
+            joined: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+            lastActive: 'Just now',
+            chats: 0,
+            csat: 0
         };
 
-        setPendingInvites(prevInvites => [newInvite, ...prevInvites]);
+        setTeamMembers(prevMembers => [newMember, ...prevMembers]);
         setIsInviteDialogOpen(false);
         setInviteEmail('');
+        setInviteName('');
+        setInvitePassword('');
         toast({
-            title: "Invitation Sent!",
-            description: `An invitation has been sent to ${inviteEmail}.`,
+            title: "Member Created!",
+            description: `${inviteName} has been added to the team.`,
         });
     }
 
@@ -166,21 +187,49 @@ export default function TeamPage() {
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
-                           <UserPlus className="w-6 h-6 text-primary"/> Invite a New Team Member
+                           <UserPlus className="w-6 h-6 text-primary"/> Invite Team Member
                         </DialogTitle>
                         <DialogDescription>
-                            Enter the email address and select a role to send an invitation.
+                           Create an account for a new team member and add them to your workspace.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                         <div className="space-y-2">
+                            <label htmlFor="name" className="text-sm font-medium">Full Name</label>
+                            <Input 
+                                id="name" 
+                                placeholder="John Doe" 
+                                value={inviteName}
+                                onChange={(e) => setInviteName(e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
                             <label htmlFor="email" className="text-sm font-medium">Email Address</label>
                             <Input 
                                 id="email" 
+                                type="email"
                                 placeholder="agent@example.com" 
                                 value={inviteEmail}
                                 onChange={(e) => setInviteEmail(e.target.value)}
                             />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Password</label>
+                            <div className="relative">
+                                <Input
+                                    type={showPassword ? 'text' : 'password'}
+                                    placeholder="Enter a strong password"
+                                    value={invitePassword}
+                                    onChange={(e) => setInvitePassword(e.target.value)}
+                                />
+                                <button
+                                    type="button"
+                                    className="absolute inset-y-0 right-0 flex items-center pr-3"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                >
+                                    {showPassword ? <EyeOff className="h-5 w-5 text-gray-400" /> : <Eye className="h-5 w-5 text-gray-400" />}
+                                </button>
+                            </div>
                         </div>
                         <div className="space-y-2">
                             <label htmlFor="role" className="text-sm font-medium">Role</label>
@@ -191,14 +240,15 @@ export default function TeamPage() {
                                 <SelectContent>
                                     <SelectItem value="Agent">Agent</SelectItem>
                                     <SelectItem value="Admin">Admin</SelectItem>
+                                    <SelectItem value="Owner">Owner</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setIsInviteDialogOpen(false)}>Cancel</Button>
-                        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground" onClick={handleSendInvitation}>
-                            Send Invitation
+                        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground" onClick={handleCreateMember}>
+                            Send Invite + Create Account
                         </Button>
                     </DialogFooter>
                 </DialogContent>
