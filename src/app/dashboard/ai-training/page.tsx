@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import {
   Book,
   Bot,
@@ -99,27 +99,32 @@ export default function AiTrainingPage() {
       { role: 'system', text: "Hi there! Ask me anything about our product." }
   ]);
 
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isTraining) {
+      setTrainingProgress(0);
+      interval = setInterval(() => {
+        setTrainingProgress(prev => {
+          if (prev >= 100) {
+            clearInterval(interval);
+            setIsTraining(false);
+            toast({ title: "Training Complete", description: "Your AI has been updated with the new knowledge." });
+            setKnowledgeBaseData(currentData =>
+              currentData.map(item =>
+                item.status === 'Pending' || item.status === 'Uploading' ? { ...item, status: 'Trained', progress: 100 } : item
+              )
+            );
+            return 100;
+          }
+          return prev + 10;
+        });
+      }, 500);
+    }
+    return () => clearInterval(interval);
+  }, [isTraining, toast]);
+  
   const startTraining = () => {
-    setIsTraining(true);
-    setTrainingProgress(0);
-    const interval = setInterval(() => {
-      setTrainingProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setIsTraining(false);
-          toast({ title: "Training Complete", description: "Your AI has been updated with the new knowledge." });
-          
-          setKnowledgeBaseData(currentData => 
-            currentData.map(item => 
-              item.status === 'Pending' || item.status === 'Uploading' ? { ...item, status: 'Trained', progress: 100 } : item
-            )
-          );
-
-          return 100;
-        }
-        return prev + 10;
-      });
-    }, 500);
+      setIsTraining(true);
   };
 
   const showFileTooLargeToast = useCallback((fileName: string) => {
@@ -469,5 +474,3 @@ export default function AiTrainingPage() {
     </div>
   );
 }
-
-    
