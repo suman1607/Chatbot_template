@@ -209,7 +209,7 @@ export default function AiTrainingPage() {
         </div>
         
         <div className="space-y-8">
-             <Card className="shadow-sm sticky top-24">
+             <Card className="shadow-sm">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><Rocket className="w-6 h-6 text-primary"/> Train your AI</CardTitle>
                     <CardDescription>Train your AI with all the knowledge sources you've provided.</CardDescription>
