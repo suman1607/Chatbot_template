@@ -1,341 +1,316 @@
+/**
+ * @fileoverview Firestore Security Rules for ChatGenius application.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model for most data, with workspaces owned by individual users (identified by their UID). Creator-related data is also secured under the creator's ID.
+ *
+ * Data Structure:
+ * - /users/{userId}: Stores user profiles; accessible only to the authenticated user.
+ * - /workspaces/{workspaceId}: Stores workspace configurations; workspaceId matches the owning user's UID.
+ * - /creators/{creatorId}: Stores creator profiles; accessible only to the authenticated creator.
+ * - /creators/{creatorId}/*: All subcollections under a creator are owned by that creator.
+ *
+ * Key Security Decisions:
+ * - User listing is disallowed.
+ * - Focus on "Authorization Independence" by denormalizing the creatorId within documents.
+ * - All write operations must be authenticated and authorized.
+ *
+ * Denormalization for Authorization:
+ * - The `creatorId` is consistently included in documents within a creator's subcollections to avoid costly `get()` calls in security rules. This allows direct verification of ownership.
+ */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Secure the `/users/{userId}` collection, allowing only the authenticated user to read and write their own data.
+     * @description Enforces authentication for all requests.
+     * @path N/A
+     * @allow N/A
+     * @deny N/A
+     * @principle Requires all requests to be authenticated.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * @description Checks if the authenticated user's UID matches the provided userId.
+     * @path N/A
+     * @allow N/A
+     * @deny N/A
+     * @principle Enforces ownership based on user ID.
+     */
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    /**
+     * @description Checks if the authenticated user's UID matches the resource's creatorId
+     * @path N/A
+     * @allow N/A
+     * @deny N/A
+     * @principle Enforces ownership based on creator ID.
+     */
+    function isCreator(creatorId) {
+      return request.auth.uid == creatorId;
+    }
+
+    /**
+     * @description Checks if the authenticated user's UID matches the existing resource's creatorId. Also verifies that the resource exists before allowing the operation.
+     * @path N/A
+     * @allow N/A
+     * @deny N/A
+     * @principle Combines ownership and existence checks for safer destructive operations.
+     */
+    function isExistingCreator(creatorId) {
+      return isCreator(creatorId) && exists(resource);
+    }
+
+    /**
+     * @description Checks if the authenticated user's UID matches the existing resource's ownerId. Also verifies that the resource exists before allowing the operation.
+     * @path N/A
+     * @allow N/A
+     * @deny N/A
+     * @principle Combines ownership and existence checks for safer destructive operations.
+     */
+    function isExistingOwner(ownerId) {
+      return isOwner(ownerId) && exists(resource);
+    }
+
+    /**
+     * @description Enforces that the 'creatorId' field in the request data matches the authenticated user's UID.
+     * @path N/A
+     * @allow N/A
+     * @deny N/A
+     * @principle Enforces relational integrity by ensuring that the creatorId is consistent with the authenticated user.
+     */
+    function isValidCreatorId(creatorId) {
+        return request.resource.data.creatorId == request.auth.uid;
+    }
+
+    /**
+     * @description Rule for restricting access to /users/{userId} documents.
      * @path /users/{userId}
-     * @allow (get, create, update, delete, list) if request.auth.uid == userId
-     * @deny (get, create, update, delete, list) if request.auth.uid != userId
-     * @principle Enforces document ownership, restricting access to a user's own data.
+     * @allow Signed-in user (get, create, update, delete)
+     * @deny Non-signed-in user (get, create, update, delete)
+     * @principle Restricts access to a user's own data tree.
      */
     match /users/{userId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      allow get: if isOwner(userId);
-      allow list: if false;
-
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if false; // User listing is not permitted.
       allow create: if isSignedIn() && isOwner(userId);
       allow update: if isSignedIn() && isOwner(userId);
-      allow delete: if isSignedIn() && isOwner(userId);
+      allow delete: if isSignedIn() && isExistingOwner(userId);
     }
 
     /**
-     * @description Secure the `/creators/{creatorId}` collection, allowing only the authenticated user to read and write their own data.
+     * @description Rule for restricting access to /workspaces/{workspaceId} documents.
+     * @path /workspaces/{workspaceId}
+     * @allow Signed-in user (get, create, update, delete)
+     * @deny Non-signed-in user (get, create, update, delete)
+     * @principle Enforces workspace ownership; workspaceId must match the user's UID.
+     */
+    match /workspaces/{workspaceId} {
+      allow get: if isSignedIn() && isOwner(workspaceId);
+      allow list: if false; // Workspace listing is not permitted.
+      allow create: if isSignedIn() && isOwner(workspaceId);
+      allow update: if isSignedIn() && isExistingOwner(workspaceId);
+      allow delete: if isSignedIn() && isExistingOwner(workspaceId);
+    }
+
+    /**
+     * @description Rule for restricting access to /creators/{creatorId} documents.
      * @path /creators/{creatorId}
-     * @allow (get, create, update, delete, list) if request.auth.uid == creatorId
-     * @deny (get, create, update, delete, list) if request.auth.uid != creatorId
-     * @principle Enforces document ownership, restricting access to a user's own data.
+     * @allow Signed-in creator (get, create, update, delete)
+     * @deny Non-signed-in user (get, create, update, delete)
+     * @principle Enforces creator ownership; creatorId must match the user's UID.
      */
     match /creators/{creatorId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(creatorId) {
-        return request.auth.uid == creatorId;
-      }
-
-      allow get: if isOwner(creatorId);
-      allow list: if false;
-
-      allow create: if isSignedIn() && isOwner(creatorId);
-      allow update: if isSignedIn() && isOwner(creatorId);
-      allow delete: if isSignedIn() && isOwner(creatorId);
+      allow get: if isSignedIn() && isCreator(creatorId);
+      allow list: if false; // Creator listing is not permitted.
+      allow create: if isSignedIn() && isCreator(creatorId);
+      allow update: if isSignedIn() && isExistingCreator(creatorId);
+      allow delete: if isSignedIn() && isExistingCreator(creatorId);
     }
 
     /**
-     * @description Secure the `/creators/{creatorId}/dashboard` collection, allowing only the creator to read and write their own dashboard data.
+     * @description Rule for restricting access to /creators/{creatorId}/dashboard documents.
      * @path /creators/{creatorId}/dashboard
-     * @allow (get, create, update, delete, list) if request.auth.uid == creatorId
-     * @deny (get, create, update, delete, list) if request.auth.uid != creatorId
-     * @principle Enforces document ownership, restricting access to a creator's own dashboard.
+     * @allow Signed-in creator (get, create, update, delete)
+     * @deny Non-signed-in user (get, create, update, delete)
+     * @principle Enforces creator ownership; creatorId in path must match the creatorId in the document.
      */
-    match /creators/{creatorId}/dashboard/{dashboardId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(creatorId) {
-        return request.auth.uid == creatorId;
-      }
-
-      allow get: if isOwner(creatorId);
+    match /creators/{creatorId}/dashboard/{document} {
+      allow get: if isSignedIn() && isCreator(creatorId);
       allow list: if false;
-
-      allow create: if isSignedIn() && request.auth.uid == creatorId;
-      allow update: if isSignedIn() && isOwner(creatorId);
-      allow delete: if isSignedIn() && isOwner(creatorId);
+      allow create: if isSignedIn() && isCreator(creatorId) && request.resource.data.creatorId == creatorId;
+      allow update: if isSignedIn() && isExistingCreator(creatorId) && request.resource.data.creatorId == resource.data.creatorId;
+      allow delete: if isSignedIn() && isExistingCreator(creatorId);
     }
 
     /**
-     * @description Secure the `/creators/{creatorId}/conversations/{conversationId}` collection, allowing only the creator to read and write their own conversation data.
+     * @description Rule for restricting access to /creators/{creatorId}/conversations/{conversationId} documents.
      * @path /creators/{creatorId}/conversations/{conversationId}
-     * @allow (get, create, update, delete, list) if request.auth.uid == creatorId
-     * @deny (get, create, update, delete, list) if request.auth.uid != creatorId
-     * @principle Enforces document ownership, restricting access to a creator's own conversation.
+     * @allow Signed-in creator (get, create, update, delete)
+     * @deny Non-signed-in user (get, create, update, delete)
+     * @principle Enforces creator ownership; creatorId in path must match the creatorId in the document.
      */
     match /creators/{creatorId}/conversations/{conversationId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(creatorId) {
-        return request.auth.uid == creatorId;
-      }
-
-      allow get: if isOwner(creatorId);
+      allow get: if isSignedIn() && isCreator(creatorId);
       allow list: if false;
-
-      allow create: if isSignedIn() && request.auth.uid == creatorId;
-      allow update: if isSignedIn() && isOwner(creatorId);
-      allow delete: if isSignedIn() && isOwner(creatorId);
+      allow create: if isSignedIn() && isCreator(creatorId) && request.resource.data.creatorId == creatorId;
+      allow update: if isSignedIn() && isExistingCreator(creatorId) && request.resource.data.creatorId == resource.data.creatorId;
+      allow delete: if isSignedIn() && isExistingCreator(creatorId);
     }
 
     /**
-     * @description Secure the `/creators/{creatorId}/ai_training/{aiTrainingId}` collection, allowing only the creator to read and write their own AI training data.
+     * @description Rule for restricting access to /creators/{creatorId}/ai_training/{aiTrainingId} documents.
      * @path /creators/{creatorId}/ai_training/{aiTrainingId}
-     * @allow (get, create, update, delete, list) if request.auth.uid == creatorId
-     * @deny (get, create, update, delete, list) if request.auth.uid != creatorId
-     * @principle Enforces document ownership, restricting access to a creator's own AI training.
+     * @allow Signed-in creator (get, create, update, delete)
+     * @deny Non-signed-in user (get, create, update, delete)
+     * @principle Enforces creator ownership; creatorId in path must match the creatorId in the document.
      */
     match /creators/{creatorId}/ai_training/{aiTrainingId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(creatorId) {
-        return request.auth.uid == creatorId;
-      }
-
-      allow get: if isOwner(creatorId);
+      allow get: if isSignedIn() && isCreator(creatorId);
       allow list: if false;
-
-      allow create: if isSignedIn() && request.auth.uid == creatorId;
-      allow update: if isSignedIn() && isOwner(creatorId);
-      allow delete: if isSignedIn() && isOwner(creatorId);
+      allow create: if isSignedIn() && isCreator(creatorId) && request.resource.data.creatorId == creatorId;
+      allow update: if isSignedIn() && isExistingCreator(creatorId) && request.resource.data.creatorId == resource.data.creatorId;
+      allow delete: if isSignedIn() && isExistingCreator(creatorId);
     }
 
     /**
-     * @description Secure the `/creators/{creatorId}/ai_training/{aiTrainingId}/articles/{articleId}` collection, allowing only the creator to read and write their own article data.
+     * @description Rule for restricting access to /creators/{creatorId}/ai_training/{aiTrainingId}/articles/{articleId} documents.
      * @path /creators/{creatorId}/ai_training/{aiTrainingId}/articles/{articleId}
-     * @allow (get, create, update, delete, list) if request.auth.uid == creatorId
-     * @deny (get, create, update, delete, list) if request.auth.uid != creatorId
-     * @principle Enforces document ownership, restricting access to a creator's own article.
+     * @allow Signed-in creator (get, create, update, delete)
+     * @deny Non-signed-in user (get, create, update, delete)
+     * @principle Enforces creator ownership through the parent relationship; creatorId in path must match the creatorId in the document.
      */
     match /creators/{creatorId}/ai_training/{aiTrainingId}/articles/{articleId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(creatorId) {
-        return request.auth.uid == creatorId;
-      }
-
-      allow get: if isOwner(creatorId);
+      allow get: if isSignedIn() && isCreator(creatorId);
       allow list: if false;
-
-      allow create: if isSignedIn() && isOwner(creatorId);
-      allow update: if isSignedIn() && isOwner(creatorId);
-      allow delete: if isSignedIn() && isOwner(creatorId);
+      allow create: if isSignedIn() && isCreator(creatorId); //CRITICAL: No creatorId field on the Article entity
+      allow update: if isSignedIn() && isExistingCreator(creatorId) ; //CRITICAL: No creatorId field on the Article entity
+      allow delete: if isSignedIn() && isExistingCreator(creatorId); //CRITICAL: No creatorId field on the Article entity
     }
 
     /**
-     * @description Secure the `/creators/{creatorId}/teams/{teamId}` collection, allowing only the creator to read and write their own team data.
+     * @description Rule for restricting access to /creators/{creatorId}/teams/{teamId} documents.
      * @path /creators/{creatorId}/teams/{teamId}
-     * @allow (get, create, update, delete, list) if request.auth.uid == creatorId
-     * @deny (get, create, update, delete, list) if request.auth.uid != creatorId
-     * @principle Enforces document ownership, restricting access to a creator's own team data.
+     * @allow Signed-in creator (get, create, update, delete)
+     * @deny Non-signed-in user (get, create, update, delete)
+     * @principle Enforces creator ownership; creatorId in path must match the creatorId in the document.
      */
     match /creators/{creatorId}/teams/{teamId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(creatorId) {
-        return request.auth.uid == creatorId;
-      }
-
-      allow get: if isOwner(creatorId);
+      allow get: if isSignedIn() && isCreator(creatorId);
       allow list: if false;
-
-      allow create: if isSignedIn() && request.auth.uid == creatorId;
-      allow update: if isSignedIn() && isOwner(creatorId);
-      allow delete: if isSignedIn() && isOwner(creatorId);
+      allow create: if isSignedIn() && isCreator(creatorId) && request.resource.data.creatorId == creatorId;
+      allow update: if isSignedIn() && isExistingCreator(creatorId) && request.resource.data.creatorId == resource.data.creatorId;
+      allow delete: if isSignedIn() && isExistingCreator(creatorId);
     }
 
-     /**
-     * @description Secure the `/creators/{creatorId}/agents/{agentId}` collection, allowing only the creator to read and write their own agent data.
+    /**
+     * @description Rule for restricting access to /creators/{creatorId}/agents/{agentId} documents.
      * @path /creators/{creatorId}/agents/{agentId}
-     * @allow (get, create, update, delete, list) if request.auth.uid == creatorId
-     * @deny (get, create, update, delete, list) if request.auth.uid != creatorId
-     * @principle Enforces document ownership, restricting access to a creator's own agent data.
+     * @allow Signed-in creator (get, create, update, delete)
+     * @deny Non-signed-in user (get, create, update, delete)
+     * @principle Enforces creator ownership; creatorId in path must match the creatorId in the document.
      */
     match /creators/{creatorId}/agents/{agentId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(creatorId) {
-        return request.auth.uid == creatorId;
-      }
-
-      allow get: if isOwner(creatorId);
+      allow get: if isSignedIn() && isCreator(creatorId);
       allow list: if false;
-
-      allow create: if isSignedIn() && request.auth.uid == creatorId;
-      allow update: if isSignedIn() && isOwner(creatorId);
-      allow delete: if isSignedIn() && isOwner(creatorId);
+      allow create: if isSignedIn() && isCreator(creatorId) && request.resource.data.creatorId == creatorId;
+      allow update: if isSignedIn() && isExistingCreator(creatorId) && request.resource.data.creatorId == resource.data.creatorId;
+      allow delete: if isSignedIn() && isExistingCreator(creatorId);
     }
 
     /**
-     * @description Secure the `/creators/{creatorId}/widgets/{widgetId}` collection, allowing only the creator to read and write their own widget data.
+     * @description Rule for restricting access to /creators/{creatorId}/widgets/{widgetId} documents.
      * @path /creators/{creatorId}/widgets/{widgetId}
-     * @allow (get, create, update, delete, list) if request.auth.uid == creatorId
-     * @deny (get, create, update, delete, list) if request.auth.uid != creatorId
-     * @principle Enforces document ownership, restricting access to a creator's own widget data.
+     * @allow Signed-in creator (get, create, update, delete)
+     * @deny Non-signed-in user (get, create, update, delete)
+     * @principle Enforces creator ownership; creatorId in path must match the creatorId in the document.
      */
     match /creators/{creatorId}/widgets/{widgetId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(creatorId) {
-        return request.auth.uid == creatorId;
-      }
-
-      allow get: if isOwner(creatorId);
+      allow get: if isSignedIn() && isCreator(creatorId);
       allow list: if false;
-
-      allow create: if isSignedIn() && request.auth.uid == creatorId;
-      allow update: if isSignedIn() && isOwner(creatorId);
-      allow delete: if isSignedIn() && isOwner(creatorId);
+      allow create: if isSignedIn() && isCreator(creatorId) && request.resource.data.creatorId == creatorId;
+      allow update: if isSignedIn() && isExistingCreator(creatorId) && request.resource.data.creatorId == resource.data.creatorId;
+      allow delete: if isSignedIn() && isExistingCreator(creatorId);
     }
 
     /**
-     * @description Secure the `/creators/{creatorId}/analytics/{analyticsId}` collection, allowing only the creator to read and write their own analytics data.
+     * @description Rule for restricting access to /creators/{creatorId}/analytics/{analyticsId} documents.
      * @path /creators/{creatorId}/analytics/{analyticsId}
-     * @allow (get, create, update, delete, list) if request.auth.uid == creatorId
-     * @deny (get, create, update, delete, list) if request.auth.uid != creatorId
-     * @principle Enforces document ownership, restricting access to a creator's own analytics data.
+     * @allow Signed-in creator (get, create, update, delete)
+     * @deny Non-signed-in user (get, create, update, delete)
+     * @principle Enforces creator ownership; creatorId in path must match the creatorId in the document.
      */
     match /creators/{creatorId}/analytics/{analyticsId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(creatorId) {
-        return request.auth.uid == creatorId;
-      }
-
-      allow get: if isOwner(creatorId);
+      allow get: if isSignedIn() && isCreator(creatorId);
       allow list: if false;
-
-      allow create: if isSignedIn() && request.auth.uid == creatorId;
-      allow update: if isSignedIn() && isOwner(creatorId);
-      allow delete: if isSignedIn() && isOwner(creatorId);
+      allow create: if isSignedIn() && isCreator(creatorId) && request.resource.data.creatorId == creatorId;
+      allow update: if isSignedIn() && isExistingCreator(creatorId) && request.resource.data.creatorId == resource.data.creatorId;
+      allow delete: if isSignedIn() && isExistingCreator(creatorId);
     }
 
     /**
-     * @description Secure the `/creators/{creatorId}/billing/{billingId}` collection, allowing only the creator to read and write their own billing data.
+     * @description Rule for restricting access to /creators/{creatorId}/billing/{billingId} documents.
      * @path /creators/{creatorId}/billing/{billingId}
-     * @allow (get, create, update, delete, list) if request.auth.uid == creatorId
-     * @deny (get, create, update, delete, list) if request.auth.uid != creatorId
-     * @principle Enforces document ownership, restricting access to a creator's own billing data.
+     * @allow Signed-in creator (get, create, update, delete)
+     * @deny Non-signed-in user (get, create, update, delete)
+     * @principle Enforces creator ownership; creatorId in path must match the creatorId in the document.
      */
     match /creators/{creatorId}/billing/{billingId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(creatorId) {
-        return request.auth.uid == creatorId;
-      }
-
-      allow get: if isOwner(creatorId);
+      allow get: if isSignedIn() && isCreator(creatorId);
       allow list: if false;
-
-      allow create: if isSignedIn() && request.auth.uid == creatorId;
-      allow update: if isSignedIn() && isOwner(creatorId);
-      allow delete: if isSignedIn() && isOwner(creatorId);
+      allow create: if isSignedIn() && isCreator(creatorId) && request.resource.data.creatorId == creatorId;
+      allow update: if isSignedIn() && isExistingCreator(creatorId) && request.resource.data.creatorId == resource.data.creatorId;
+      allow delete: if isSignedIn() && isExistingCreator(creatorId);
     }
 
     /**
-     * @description Secure the `/creators/{creatorId}/settings/{settingsId}` collection, allowing only the creator to read and write their own settings data.
+     * @description Rule for restricting access to /creators/{creatorId}/settings/{settingsId} documents.
      * @path /creators/{creatorId}/settings/{settingsId}
-     * @allow (get, create, update, delete, list) if request.auth.uid == creatorId
-     * @deny (get, create, update, delete, list) if request.auth.uid != creatorId
-     * @principle Enforces document ownership, restricting access to a creator's own settings data.
+     * @allow Signed-in creator (get, create, update, delete)
+     * @deny Non-signed-in user (get, create, update, delete)
+     * @principle Enforces creator ownership; creatorId in path must match the creatorId in the document.
      */
     match /creators/{creatorId}/settings/{settingsId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(creatorId) {
-        return request.auth.uid == creatorId;
-      }
-
-      allow get: if isOwner(creatorId);
+      allow get: if isSignedIn() && isCreator(creatorId);
       allow list: if false;
-
-      allow create: if isSignedIn() && request.auth.uid == creatorId;
-      allow update: if isSignedIn() && isOwner(creatorId);
-      allow delete: if isSignedIn() && isOwner(creatorId);
+      allow create: if isSignedIn() && isCreator(creatorId) && request.resource.data.creatorId == creatorId;
+      allow update: if isSignedIn() && isExistingCreator(creatorId) && request.resource.data.creatorId == resource.data.creatorId;
+      allow delete: if isSignedIn() && isExistingCreator(creatorId);
     }
 
     /**
-     * @description Secure the `/creators/{creatorId}/support_tickets/{supportTicketId}` collection, allowing only the creator to read and write their own support ticket data.
+     * @description Rule for restricting access to /creators/{creatorId}/support_tickets/{supportTicketId} documents.
      * @path /creators/{creatorId}/support_tickets/{supportTicketId}
-     * @allow (get, create, update, delete, list) if request.auth.uid == creatorId
-     * @deny (get, create, update, delete, list) if request.auth.uid != creatorId
-     * @principle Enforces document ownership, restricting access to a creator's own support ticket data.
+     * @allow Signed-in creator (get, create, update, delete)
+     * @deny Non-signed-in user (get, create, update, delete)
+     * @principle Enforces creator ownership; creatorId in path must match the creatorId in the document.
      */
     match /creators/{creatorId}/support_tickets/{supportTicketId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(creatorId) {
-        return request.auth.uid == creatorId;
-      }
-
-      allow get: if isOwner(creatorId);
+      allow get: if isSignedIn() && isCreator(creatorId);
       allow list: if false;
-
-      allow create: if isSignedIn() && request.auth.uid == creatorId;
-      allow update: if isSignedIn() && isOwner(creatorId);
-      allow delete: if isSignedIn() && isOwner(creatorId);
+      allow create: if isSignedIn() && isCreator(creatorId) && request.resource.data.creatorId == creatorId;
+      allow update: if isSignedIn() && isExistingCreator(creatorId) && request.resource.data.creatorId == resource.data.creatorId;
+      allow delete: if isSignedIn() && isExistingCreator(creatorId);
     }
 
     /**
-     * @description Secure the `/creators/{creatorId}/activities/{activityId}` collection, allowing only the creator to read and write their own activity data.
+     * @description Rule for restricting access to /creators/{creatorId}/activities/{activityId} documents.
      * @path /creators/{creatorId}/activities/{activityId}
-     * @allow (get, create, update, delete, list) if request.auth.uid == creatorId
-     * @deny (get, create, update, delete, list) if request.auth.uid != creatorId
-     * @principle Enforces document ownership, restricting access to a creator's own activity data.
+     * @allow Signed-in creator (get, create, update, delete)
+     * @deny Non-signed-in user (get, create, update, delete)
+     * @principle Enforces creator ownership; creatorId in path must match the creatorId in the document.
      */
     match /creators/{creatorId}/activities/{activityId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(creatorId) {
-        return request.auth.uid == creatorId;
-      }
-
-      allow get: if isOwner(creatorId);
+      allow get: if isSignedIn() && isCreator(creatorId);
       allow list: if false;
-
-      allow create: if isSignedIn() && request.auth.uid == creatorId;
-      allow update: if isSignedIn() && isOwner(creatorId);
-      allow delete: if isSignedIn() && isOwner(creatorId);
+      allow create: if isSignedIn() && isCreator(creatorId); //CRITICAL: No creatorId field on the Activity entity
+      allow update: if isSignedIn() && isExistingCreator(creatorId) ; //CRITICAL: No creatorId field on the Activity entity
+      allow delete: if isSignedIn() && isExistingCreator(creatorId); //CRITICAL: No creatorId field on the Activity entity
     }
   }
 }
