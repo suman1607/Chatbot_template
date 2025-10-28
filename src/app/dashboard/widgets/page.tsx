@@ -137,7 +137,7 @@ export default function WidgetsPage() {
     const { toast } = useToast();
     
     const installationInstructions = `<!-- ChatGenius Widget -->
-<script src="https://cdn.chatgenius.com/widget.js" async defer></script>
+<script src="/dashboard/widgets/widget.js" async defer></script>
 <script>
   window.addEventListener('load', () => {
     if (window.ChatGenius) {
