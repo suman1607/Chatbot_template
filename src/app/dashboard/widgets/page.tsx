@@ -47,6 +47,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 const WidgetPreview = ({ settings, isMobile, chatOpen, setChatOpen }: any) => {
     
@@ -55,63 +56,67 @@ const WidgetPreview = ({ settings, isMobile, chatOpen, setChatOpen }: any) => {
              <div className="absolute inset-0 bg-[url('https://picsum.photos/seed/bg/800/600')] bg-cover bg-center opacity-50"></div>
              
              {/* Launcher */}
-             {!chatOpen && (
-                <button 
-                    onClick={() => setChatOpen(true)}
-                    className="absolute w-16 h-16 rounded-full flex items-center justify-center text-white shadow-lg transition-transform hover:scale-110"
-                    style={{ 
-                        backgroundColor: settings.color,
-                        bottom: '1rem',
-                        right: '1rem'
-                    }}
-                >
-                    <MessageSquare className="w-8 h-8" />
-                </button>
-             )}
+             <button 
+                onClick={() => setChatOpen(true)}
+                className={cn("absolute w-16 h-16 rounded-full flex items-center justify-center text-white shadow-lg transition-all duration-300 hover:scale-110",
+                   chatOpen ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
+                )}
+                style={{ 
+                    backgroundColor: settings.color,
+                    bottom: '1rem',
+                    right: '1rem'
+                }}
+            >
+                <MessageSquare className="w-8 h-8" />
+            </button>
 
              {/* Chat Window */}
-             {chatOpen && (
-                 <div className={`absolute bg-white rounded-lg shadow-2xl flex flex-col transition-all duration-300 ${isMobile ? 'inset-0' : 'inset-4 bottom-20 right-4 w-[320px]'}`}>
-                     <div className="p-4 flex items-center justify-between text-white" style={{ backgroundColor: settings.color, borderTopLeftRadius: '0.5rem', borderTopRightRadius: '0.5rem' }}>
-                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-white/30 flex items-center justify-center">
-                                <Bot className="w-6 h-6"/>
-                            </div>
-                            <div>
-                                <p className="font-bold text-lg">ChatGenius</p>
-                                <p className="text-sm opacity-80">We'll reply as soon as we can</p>
-                            </div>
-                         </div>
-                         <button onClick={() => setChatOpen(false)}><X className="w-5 h-5"/></button>
-                     </div>
-                     <div className="flex-grow p-4 space-y-4 overflow-y-auto">
-                        <div className="flex items-start gap-2.5">
-                            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
-                                <Bot className="w-5 h-5 text-gray-600"/>
-                            </div>
-                            <div className="bg-gray-100 p-3 rounded-lg rounded-bl-none max-w-xs">
-                                <p className="text-sm">{settings.welcomeMessage}</p>
-                            </div>
+             <div className={cn(
+                "absolute bg-white rounded-lg shadow-2xl flex flex-col transition-all duration-300 ease-in-out",
+                isMobile ? 'inset-0' : 'bottom-4 right-4 w-[320px] h-[calc(100%-6rem)]',
+                chatOpen 
+                    ? 'opacity-100 transform scale-100 translate-y-0' 
+                    : 'opacity-0 transform scale-95 translate-y-4 pointer-events-none'
+             )}>
+                 <div className="p-4 flex items-center justify-between text-white" style={{ backgroundColor: settings.color, borderTopLeftRadius: '0.5rem', borderTopRightRadius: '0.5rem' }}>
+                     <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-white/30 flex items-center justify-center">
+                            <Bot className="w-6 h-6"/>
+                        </div>
+                        <div>
+                            <p className="font-bold text-lg">ChatGenius</p>
+                            <p className="text-sm opacity-80">We'll reply as soon as we can</p>
                         </div>
                      </div>
-                     <div className="p-4 border-t">
-                         <div className="relative">
-                             <Input placeholder="Type your message..." className="pr-10"/>
-                             <button className="absolute right-2 top-1/2 -translate-y-1/2" style={{color: settings.color}}>
-                                 <Send className="w-5 h-5"/>
-                             </button>
-                         </div>
-                     </div>
-                     {settings.showBranding && (
-                        <div className="py-2 px-4 border-t">
-                            <a href="#" className="flex items-center justify-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors">
-                                <MessageSquare className="w-3.5 h-3.5"/>
-                                <span>Powered by <strong>ChatGenius</strong></span>
-                            </a>
-                        </div>
-                     )}
+                     <button onClick={() => setChatOpen(false)}><X className="w-5 h-5"/></button>
                  </div>
-             )}
+                 <div className="flex-grow p-4 space-y-4 overflow-y-auto">
+                    <div className="flex items-start gap-2.5">
+                        <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
+                            <Bot className="w-5 h-5 text-gray-600"/>
+                        </div>
+                        <div className="bg-gray-100 p-3 rounded-lg rounded-bl-none max-w-xs">
+                            <p className="text-sm">{settings.welcomeMessage}</p>
+                        </div>
+                    </div>
+                 </div>
+                 <div className="p-4 border-t">
+                     <div className="relative">
+                         <Input placeholder="Type your message..." className="pr-10"/>
+                         <button className="absolute right-2 top-1/2 -translate-y-1/2" style={{color: settings.color}}>
+                             <Send className="w-5 h-5"/>
+                         </button>
+                     </div>
+                 </div>
+                 {settings.showBranding && (
+                    <div className="py-2 px-4 border-t">
+                        <a href="#" className="flex items-center justify-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors">
+                            <MessageSquare className="w-3.5 h-3.5"/>
+                            <span>Powered by <strong>ChatGenius</strong></span>
+                        </a>
+                    </div>
+                 )}
+             </div>
         </div>
     )
 }
