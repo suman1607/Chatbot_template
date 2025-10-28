@@ -86,6 +86,14 @@ export default function AiTrainingPage() {
           clearInterval(interval);
           setIsTraining(false);
           toast({ title: "Training Complete", description: "Your AI has been updated with the new knowledge." });
+          
+          // Update the status of pending items to "Trained"
+          setKnowledgeBaseData(currentData => 
+            currentData.map(item => 
+              item.status === 'Pending' || item.status === 'Uploading' ? { ...item, status: 'Trained', progress: 100 } : item
+            )
+          );
+
           return 100;
         }
         return prev + 10;
@@ -300,7 +308,7 @@ export default function AiTrainingPage() {
             </Card>
         </div>
         
-        <div className="lg:col-span-1 space-y-8 sticky top-24">
+        <div className="lg:col-span-1 space-y-8">
              <Card className="shadow-sm">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><Rocket className="w-6 h-6 text-primary"/> Train your AI</CardTitle>
@@ -367,4 +375,5 @@ export default function AiTrainingPage() {
       </div>
     </div>
   );
-}
+
+    
