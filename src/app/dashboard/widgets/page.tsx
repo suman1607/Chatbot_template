@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -14,7 +13,8 @@ import {
   Eye,
   Send,
   X,
-  Bot
+  Bot,
+  MessageSquare,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -329,4 +329,3 @@ export default function WidgetsPage() {
     </div>
   );
 }
-
