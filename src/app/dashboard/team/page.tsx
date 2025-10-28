@@ -62,8 +62,9 @@ import {
   Info,
 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { useToast } from '@/hooks/use-toast';
 
-const teamMembers = [
+const initialTeamMembers = [
   { name: 'Sarah Miller', email: 'sarah@example.com', role: 'Owner', status: 'Online', joined: 'Jan 15, 2023', lastActive: 'Now', chats: 128, csat: 4.9 },
   { name: 'David Chen', email: 'david@example.com', role: 'Admin', status: 'Online', joined: 'Feb 02, 2023', lastActive: '5m ago', chats: 112, csat: 4.8 },
   { name: 'Maria Garcia', email: 'maria@example.com', role: 'Agent', status: 'Offline', joined: 'Mar 20, 2023', lastActive: '2h ago', chats: 98, csat: 4.8 },
@@ -71,7 +72,7 @@ const teamMembers = [
   { name: 'John Doe', email: 'john.doe@example.com', role: 'Agent', status: 'Offline', joined: 'May 01, 2023', lastActive: '1d ago', chats: 72, csat: 4.6 },
 ];
 
-const pendingInvites = [
+const initialPendingInvites = [
     { email: 'new.agent@example.com', role: 'Agent', invited: '2 days ago' },
     { email: 'another.agent@example.com', role: 'Admin', invited: '5 days ago' },
 ]
@@ -108,11 +109,42 @@ const RoleBadge = ({ role }: { role: string }) => {
 
 export default function TeamPage() {
     const [searchQuery, setSearchQuery] = useState("");
+    const [teamMembers, setTeamMembers] = useState(initialTeamMembers);
+    const [pendingInvites, setPendingInvites] = useState(initialPendingInvites);
+    const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
+    const [inviteEmail, setInviteEmail] = useState('');
+    const [inviteRole, setInviteRole] = useState('Agent');
+    const { toast } = useToast();
 
     const filteredMembers = teamMembers.filter(member =>
         member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         member.email.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    const handleSendInvitation = () => {
+        if (!inviteEmail) {
+            toast({
+                variant: "destructive",
+                title: "Email required",
+                description: "Please enter an email address to send an invitation.",
+            });
+            return;
+        }
+
+        const newInvite = {
+            email: inviteEmail,
+            role: inviteRole,
+            invited: 'Just now'
+        };
+
+        setPendingInvites(prevInvites => [newInvite, ...prevInvites]);
+        setIsInviteDialogOpen(false);
+        setInviteEmail('');
+        toast({
+            title: "Invitation Sent!",
+            description: `An invitation has been sent to ${inviteEmail}.`,
+        });
+    }
 
     return (
     <div className="space-y-8">
@@ -124,7 +156,7 @@ export default function TeamPage() {
                 </h1>
                 <p className="text-muted-foreground">Manage your agents, assign roles, and track team performance.</p>
             </div>
-            <Dialog>
+            <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
                 <DialogTrigger asChild>
                     <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
                         <Plus className="mr-2 h-4 w-4" />
@@ -143,24 +175,29 @@ export default function TeamPage() {
                     <div className="space-y-4 py-4">
                         <div className="space-y-2">
                             <label htmlFor="email" className="text-sm font-medium">Email Address</label>
-                            <Input id="email" placeholder="agent@example.com" />
+                            <Input 
+                                id="email" 
+                                placeholder="agent@example.com" 
+                                value={inviteEmail}
+                                onChange={(e) => setInviteEmail(e.target.value)}
+                            />
                         </div>
                         <div className="space-y-2">
                             <label htmlFor="role" className="text-sm font-medium">Role</label>
-                            <Select>
+                            <Select value={inviteRole} onValueChange={setInviteRole}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select a role" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="agent">Agent</SelectItem>
-                                    <SelectItem value="admin">Admin</SelectItem>
+                                    <SelectItem value="Agent">Agent</SelectItem>
+                                    <SelectItem value="Admin">Admin</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button variant="outline">Cancel</Button>
-                        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                        <Button variant="outline" onClick={() => setIsInviteDialogOpen(false)}>Cancel</Button>
+                        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground" onClick={handleSendInvitation}>
                             Send Invitation
                         </Button>
                     </DialogFooter>
@@ -335,7 +372,4 @@ export default function TeamPage() {
         </div>
     </div>
   );
-
-    
-
-    
+}
