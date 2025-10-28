@@ -112,12 +112,8 @@ export default function WidgetsPage() {
     const [settings, setSettings] = useState({
         name: "My First Widget",
         color: '#F97316',
-        position: 'bottom-right',
         welcomeMessage: 'Hello! How can we help you today?',
-        avatarUrl: '',
-        language: 'en',
         showBranding: true,
-        autoOpenDelay: 3,
     });
     const [isMobilePreview, setIsMobilePreview] = useState(false);
     const [chatOpen, setChatOpen] = useState(true);
