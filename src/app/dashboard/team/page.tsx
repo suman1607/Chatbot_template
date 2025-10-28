@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Avatar,
   AvatarFallback,
@@ -65,10 +65,12 @@ import {
 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
+import { Switch } from '@/components/ui/switch';
+import { cn } from '@/lib/utils';
 
 const initialTeamMembers = [
   { name: 'Sarah Miller', email: 'sarah@example.com', role: 'Owner', status: 'Online', joined: 'Jan 15, 2023', lastActive: 'Now', chats: 128, csat: 4.9 },
-  { name: 'David Chen', email: 'david@example.com', role: 'Admin', status: 'Online', joined: 'Feb 02, 2023', lastActive: '5m ago', chats: 112, csat: 4.8 },
+  { name: 'David Chen', email: 'david@example.com', role: 'Agent', status: 'Online', joined: 'Feb 02, 2023', lastActive: '5m ago', chats: 112, csat: 4.8 },
   { name: 'Maria Garcia', email: 'maria@example.com', role: 'Agent', status: 'Offline', joined: 'Mar 20, 2023', lastActive: '2h ago', chats: 98, csat: 4.8 },
   { name: 'Alex Thompson', email: 'alex@example.com', role: 'Agent', status: 'Online', joined: 'Apr 10, 2023', lastActive: '30m ago', chats: 85, csat: 4.7 },
   { name: 'John Doe', email: 'john.doe@example.com', role: 'Agent', status: 'Offline', joined: 'May 01, 2023', lastActive: '1d ago', chats: 72, csat: 4.6 },
@@ -76,7 +78,7 @@ const initialTeamMembers = [
 
 const initialPendingInvites = [
     { email: 'new.agent@example.com', role: 'Agent', invited: '2 days ago' },
-    { email: 'another.agent@example.com', role: 'Admin', invited: '5 days ago' },
+    { email: 'another.agent@example.com', role: 'Agent', invited: '5 days ago' },
 ]
 
 const recentActivity = [
@@ -92,6 +94,23 @@ const leaderboard = [
     { name: 'Maria Garcia', value: '95% resolved', avatarColor: 'bg-orange-300' },
 ];
 
+const permissionsList = [
+    'Dashboard', 'Conversations', 'Analytics', 'AI Training', 
+    'Team', 'Widget', 'Settings', 'Support'
+];
+
+type Permissions = {
+    [key: string]: boolean;
+};
+
+const defaultPermissions: Permissions = permissionsList.reduce((acc, perm) => ({ ...acc, [perm]: false }), {});
+
+const rolePermissions: { [key: string]: string[] } = {
+    'Agent': ['Conversations', 'Support'],
+    'Manager': ['Dashboard', 'Conversations', 'Analytics', 'Support'],
+};
+
+
 const getInitials = (name: string) => {
     const names = name.split(' ');
     if (names.length > 1) {
@@ -103,7 +122,7 @@ const getInitials = (name: string) => {
 const RoleBadge = ({ role }: { role: string }) => {
     const roleColors: {[key: string]: string} = {
         'Owner': 'bg-primary text-primary-foreground',
-        'Admin': 'bg-orange-200 text-orange-800',
+        'Manager': 'bg-orange-300 text-orange-900',
         'Agent': 'bg-orange-100 text-orange-700'
     }
     return <Badge className={roleColors[role] || 'bg-gray-200 text-gray-800'}>{role}</Badge>;
@@ -119,7 +138,24 @@ export default function TeamPage() {
     const [invitePassword, setInvitePassword] = useState('');
     const [inviteRole, setInviteRole] = useState('Agent');
     const [showPassword, setShowPassword] = useState(false);
+    const [permissions, setPermissions] = useState<Permissions>(defaultPermissions);
+
     const { toast } = useToast();
+
+    useEffect(() => {
+        const newPermissions: Permissions = { ...defaultPermissions };
+        if (rolePermissions[inviteRole]) {
+            rolePermissions[inviteRole].forEach(p => {
+                newPermissions[p] = true;
+            });
+        } else if (inviteRole === 'Owner') {
+            permissionsList.forEach(p => {
+                newPermissions[p] = true;
+            });
+        }
+        setPermissions(newPermissions);
+    }, [inviteRole]);
+
 
     const filteredMembers = teamMembers.filter(member =>
         member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -166,6 +202,15 @@ export default function TeamPage() {
             description: `${inviteName} has been added to the team.`,
         });
     }
+    
+    const handlePermissionChange = (permission: string, checked: boolean) => {
+        setPermissions(prev => ({...prev, [permission]: checked}));
+    }
+
+    const setAllPermissions = (value: boolean) => {
+        setPermissions(permissionsList.reduce((acc, perm) => ({ ...acc, [perm]: value }), {}));
+    }
+
 
     return (
     <div className="space-y-8">
@@ -184,7 +229,7 @@ export default function TeamPage() {
                         Invite Agent
                     </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="max-w-2xl">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
                            <UserPlus className="w-6 h-6 text-primary"/> Invite Team Member
@@ -194,55 +239,90 @@ export default function TeamPage() {
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
-                        <div className="space-y-2">
-                            <label htmlFor="name" className="text-sm font-medium">Full Name</label>
-                            <Input 
-                                id="name" 
-                                placeholder="John Doe" 
-                                value={inviteName}
-                                onChange={(e) => setInviteName(e.target.value)}
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label htmlFor="email" className="text-sm font-medium">Email Address</label>
-                            <Input 
-                                id="email" 
-                                type="email"
-                                placeholder="agent@example.com" 
-                                value={inviteEmail}
-                                onChange={(e) => setInviteEmail(e.target.value)}
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Password</label>
-                            <div className="relative">
-                                <Input
-                                    type={showPassword ? 'text' : 'password'}
-                                    placeholder="Enter a strong password"
-                                    value={invitePassword}
-                                    onChange={(e) => setInvitePassword(e.target.value)}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                             <div className="space-y-2">
+                                <label htmlFor="name" className="text-sm font-medium">Full Name</label>
+                                <Input 
+                                    id="name" 
+                                    placeholder="John Doe" 
+                                    value={inviteName}
+                                    onChange={(e) => setInviteName(e.target.value)}
                                 />
-                                <button
-                                    type="button"
-                                    className="absolute inset-y-0 right-0 flex items-center pr-3"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                >
-                                    {showPassword ? <EyeOff className="h-5 w-5 text-gray-400" /> : <Eye className="h-5 w-5 text-gray-400" />}
-                                </button>
+                            </div>
+                            <div className="space-y-2">
+                                <label htmlFor="email" className="text-sm font-medium">Email Address</label>
+                                <Input 
+                                    id="email" 
+                                    type="email"
+                                    placeholder="agent@example.com" 
+                                    value={inviteEmail}
+                                    onChange={(e) => setInviteEmail(e.target.value)}
+                                />
                             </div>
                         </div>
-                        <div className="space-y-2">
-                            <label htmlFor="role" className="text-sm font-medium">Role</label>
-                            <Select value={inviteRole} onValueChange={setInviteRole}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select a role" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Agent">Agent</SelectItem>
-                                    <SelectItem value="Owner">Owner</SelectItem>
-                                </SelectContent>
-                            </Select>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Password</label>
+                                <div className="relative">
+                                    <Input
+                                        type={showPassword ? 'text' : 'password'}
+                                        placeholder="Enter a strong password"
+                                        value={invitePassword}
+                                        onChange={(e) => setInvitePassword(e.target.value)}
+                                    />
+                                    <button
+                                        type="button"
+                                        className="absolute inset-y-0 right-0 flex items-center pr-3"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                    >
+                                        {showPassword ? <EyeOff className="h-5 w-5 text-gray-400" /> : <Eye className="h-5 w-5 text-gray-400" />}
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <label htmlFor="role" className="text-sm font-medium">Role</label>
+                                <Select value={inviteRole} onValueChange={setInviteRole}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a role" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Agent">Agent</SelectItem>
+                                        <SelectItem value="Manager">Manager</SelectItem>
+                                        <SelectItem value="Owner">Owner</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
+                        {(inviteRole === 'Agent' || inviteRole === 'Manager') && (
+                            <div className="space-y-3 pt-2">
+                                <Separator />
+                                <div>
+                                    <label className="text-sm font-medium">Permissions</label>
+                                    <p className="text-xs text-muted-foreground">Turn off modules the {inviteRole.toLowerCase()} shouldn’t access.</p>
+                                </div>
+                                 <div className="flex gap-2">
+                                    <Button variant="link" size="sm" className="p-0 h-auto text-primary" onClick={() => setAllPermissions(true)}>Select all</Button>
+                                    <Separator orientation="vertical" className="h-4"/>
+                                    <Button variant="link" size="sm" className="p-0 h-auto text-primary" onClick={() => setAllPermissions(false)}>Clear all</Button>
+                                </div>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 gap-y-3">
+                                    {permissionsList.map((perm) => (
+                                        <div key={perm} className="flex items-center space-x-2">
+                                            <Switch 
+                                                id={perm} 
+                                                checked={permissions[perm]}
+                                                onCheckedChange={(checked) => handlePermissionChange(perm, checked)}
+                                                className="data-[state=checked]:bg-primary"
+                                            />
+                                            <label htmlFor={perm} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                                {perm}
+                                            </label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setIsInviteDialogOpen(false)}>Cancel</Button>

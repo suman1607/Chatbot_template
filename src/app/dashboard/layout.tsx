@@ -36,24 +36,24 @@ const menuGroups = [
     {
         label: 'Dashboard',
         items: [
-            { href: '/dashboard', icon: Home, label: 'Overview' },
-            { href: '/dashboard/conversations', icon: MessageSquare, label: 'Conversations' },
-            { href: '/dashboard/analytics', icon: BarChart2, label: 'Analytics' },
+            { href: '/dashboard', icon: Home, label: 'Overview', permission: 'Dashboard' },
+            { href: '/dashboard/conversations', icon: MessageSquare, label: 'Conversations', permission: 'Conversations' },
+            { href: '/dashboard/analytics', icon: BarChart2, label: 'Analytics', permission: 'Analytics' },
         ]
     },
     {
         label: 'Management',
         items: [
-            { href: '/dashboard/ai-training', icon: Bot, label: 'AI Training' },
-            { href: '/dashboard/team', icon: Users, label: 'Team' },
-            { href: '/dashboard/widgets', icon: LayoutTemplate, label: 'Widget' },
+            { href: '/dashboard/ai-training', icon: Bot, label: 'AI Training', permission: 'AI Training' },
+            { href: '/dashboard/team', icon: Users, label: 'Team', permission: 'Team' },
+            { href: '/dashboard/widgets', icon: LayoutTemplate, label: 'Widget', permission: 'Widget' },
         ]
     }
 ];
 
 const bottomMenuItems = [
-    { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
-    { href: '/dashboard/support', icon: LifeBuoy, label: 'Support' },
+    { href: '/dashboard/settings', icon: Settings, label: 'Settings', permission: 'Settings' },
+    { href: '/dashboard/support', icon: LifeBuoy, label: 'Support', permission: 'Support' },
 ]
 
 
@@ -65,6 +65,18 @@ export default function DashboardLayout({
   const { user, isUserLoading } = useUser();
   const router = useRouter();
   const pathname = usePathname();
+
+  // This is a placeholder. In a real app, you'd fetch this from your backend
+  // based on the logged-in user's role and permissions.
+  const userPermissions = ['Dashboard', 'Conversations', 'Analytics', 'AI Training', 'Team', 'Widget', 'Settings', 'Support'];
+
+  const filteredMenuGroups = menuGroups.map(group => ({
+    ...group,
+    items: group.items.filter(item => userPermissions.includes(item.permission))
+  })).filter(group => group.items.length > 0);
+
+  const filteredBottomMenuItems = bottomMenuItems.filter(item => userPermissions.includes(item.permission));
+
 
   if (isUserLoading) {
     return (
@@ -89,7 +101,7 @@ export default function DashboardLayout({
           </div>
         </SidebarHeader>
         <SidebarContent>
-            {menuGroups.map((group) => (
+            {filteredMenuGroups.map((group) => (
                 <SidebarGroup key={group.label}>
                     <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
                     <SidebarMenu>
@@ -107,7 +119,7 @@ export default function DashboardLayout({
         </SidebarContent>
         <SidebarFooter>
             <SidebarMenu>
-                {bottomMenuItems.map((item) => (
+                {filteredBottomMenuItems.map((item) => (
                     <SidebarMenuItem key={item.href}>
                         <SidebarMenuButton href={item.href} tooltip={item.label} isActive={pathname === item.href}>
                         <item.icon />
