@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useRef } from 'react';
 import {
   Book,
   Bot,
@@ -56,11 +56,22 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
+import { sandboxChat } from '@/ai/flows/sandbox-flow';
 
-const initialKnowledgeBase = [
-  { id: 1, source: "pricing-faq.pdf", type: "PDF", status: "Trained", lastUpdated: "2 days ago", progress: 100 },
-  { id: 2, source: "https://my-docs.com/api", type: "URL", status: "Trained", lastUpdated: "1 week ago", progress: 100 },
-  { id: 3, source: "Getting Started Guide", type: "Text", status: "Pending", lastUpdated: "3 hours ago", progress: 0 },
+type KnowledgeItem = {
+    id: number;
+    source: string;
+    type: string;
+    status: "Uploading" | "Pending" | "Trained";
+    lastUpdated: string;
+    progress: number;
+    content?: string; // Add content for text-based knowledge
+};
+
+const initialKnowledgeBase: KnowledgeItem[] = [
+  { id: 1, source: "pricing-faq.pdf", type: "PDF", status: "Trained", lastUpdated: "2 days ago", progress: 100, content: "Our Pro plan is $79 per month." },
+  { id: 2, source: "https://my-docs.com/api", type: "URL", status: "Trained", lastUpdated: "1 week ago", progress: 100, content: "The API endpoint for users is /api/users." },
+  { id: 3, source: "Getting Started Guide", type: "Text", status: "Pending", lastUpdated: "3 hours ago", progress: 0, content: "To get started, first create an account and then set up your widget." },
 ];
 
 const activityLogData = [
@@ -69,13 +80,24 @@ const activityLogData = [
     { action: "Crawled 'docs.example.com'", timestamp: "3 days ago", icon: <Link className="w-4 h-4 text-blue-500" /> },
 ];
 
+type ChatMessage = {
+    role: 'user' | 'model' | 'system';
+    text: string;
+};
+
 export default function AiTrainingPage() {
   const [trainingProgress, setTrainingProgress] = useState(0);
   const [isTraining, setIsTraining] = useState(false);
-  const [knowledgeBaseData, setKnowledgeBaseData] = useState(initialKnowledgeBase);
+  const [knowledgeBaseData, setKnowledgeBaseData] = useState<KnowledgeItem[]>(initialKnowledgeBase);
   const [isDragging, setIsDragging] = useState(false);
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [sandboxInput, setSandboxInput] = useState('');
+  const [isAiResponding, setIsAiResponding] = useState(false);
+  const [sandboxMessages, setSandboxMessages] = useState<ChatMessage[]>([
+      { role: 'system', text: "Hi there! Ask me anything about our product." }
+  ]);
 
   const startTraining = () => {
     setIsTraining(true);
@@ -110,11 +132,11 @@ export default function AiTrainingPage() {
         return;
     }
 
-    const newFileEntry = {
+    const newFileEntry: KnowledgeItem = {
         id: Date.now(),
         source: file.name,
         type: file.type.split('/')[1]?.toUpperCase() || 'File',
-        status: "Uploading" as "Uploading" | "Pending" | "Trained",
+        status: "Uploading",
         lastUpdated: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         progress: 0
     };
@@ -128,7 +150,7 @@ export default function AiTrainingPage() {
                 const newProgress = item.progress + 20;
                 if (newProgress >= 100) {
                     clearInterval(uploadInterval);
-                    return { ...item, progress: 100, status: "Pending" as "Pending" };
+                    return { ...item, progress: 100, status: "Pending" };
                 }
                 return { ...item, progress: newProgress };
             }
@@ -161,14 +183,59 @@ export default function AiTrainingPage() {
   const onFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
       const files = e.target.files;
       if(files && files.length > 0) {
-          handleFileUpload(files[0]);
+          for(let i = 0; i < files.length; i++) {
+              handleFileUpload(files[i]);
+          }
+      }
+      // Reset file input
+      if(fileInputRef.current) {
+          fileInputRef.current.value = "";
       }
   }, [handleFileUpload]);
+
 
   const removeKnowledgeItem = (id: number) => {
     setKnowledgeBaseData(prev => prev.filter(item => item.id !== id));
     toast({ title: "Source removed", description: "The knowledge source has been deleted." });
   }
+
+  const handleSandboxSubmit = async () => {
+    if (!sandboxInput.trim() || isAiResponding) return;
+
+    const userMessage: ChatMessage = { role: 'user', text: sandboxInput };
+    setSandboxMessages(prev => [...prev, userMessage]);
+    setSandboxInput('');
+    setIsAiResponding(true);
+
+    const trainedKnowledge = knowledgeBaseData
+        .filter(item => item.status === 'Trained' && item.content)
+        .map(item => ({ source: item.source, content: item.content! }));
+    
+    // Prepare history for Genkit
+    const history = sandboxMessages
+        .filter(m => m.role === 'user' || m.role === 'model')
+        .map(m => ({
+            role: m.role as 'user' | 'model',
+            content: [{ text: m.text }]
+        }));
+
+    history.push({ role: 'user', content: [{ text: userMessage.text }] });
+
+    try {
+        const result = await sandboxChat({
+            history,
+            knowledge: trainedKnowledge
+        });
+        const aiMessage: ChatMessage = { role: 'model', text: result.response };
+        setSandboxMessages(prev => [...prev, aiMessage]);
+    } catch (error) {
+        console.error("Error in sandbox chat:", error);
+        const errorMessage: ChatMessage = { role: 'model', text: "Sorry, I encountered an error." };
+        setSandboxMessages(prev => [...prev, errorMessage]);
+    } finally {
+        setIsAiResponding(false);
+    }
+  };
 
   const sortedKnowledgeBase = useMemo(() => {
     return [...knowledgeBaseData].sort((a, b) => b.id - a.id);
@@ -327,7 +394,7 @@ export default function AiTrainingPage() {
                     {!isTraining && trainingProgress === 100 && (
                          <div className="text-sm text-green-600 font-medium text-center">Training complete!</div>
                     )}
-                    <Button onClick={startTraining} disabled={isTraining} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
+                    <Button onClick={startTraining} disabled={isTraining || knowledgeBaseData.every(item => item.status === 'Trained')} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
                         <Sparkles className="w-4 h-4 mr-2" />
                         {isTraining ? 'Training...' : 'Start Training'}
                     </Button>
@@ -341,21 +408,41 @@ export default function AiTrainingPage() {
                  <CardContent>
                   <div className="bg-gray-100 p-4 rounded-lg h-80 flex flex-col">
                     <div className="flex-grow space-y-4 overflow-y-auto pr-2">
-                      <div className="flex items-start gap-2.5">
-                        <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0">
-                          <Bot className="w-5 h-5" />
+                      {sandboxMessages.map((msg, index) => (
+                          <div key={index} className={`flex items-start gap-2.5 ${msg.role === 'user' ? 'justify-end' : ''}`}>
+                            {msg.role === 'model' || msg.role === 'system' ? (
+                                <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0">
+                                <Bot className="w-5 h-5" />
+                                </div>
+                            ) : null}
+                            <div className={`p-3 rounded-lg max-w-xs shadow-sm ${msg.role === 'user' ? 'bg-white rounded-br-none' : 'bg-white rounded-bl-none'}`}>
+                                <p className="text-sm">{msg.text}</p>
+                            </div>
+                         </div>
+                      ))}
+                      {isAiResponding && (
+                        <div className="flex items-start gap-2.5">
+                            <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0">
+                            <Bot className="w-5 h-5" />
+                            </div>
+                            <div className="bg-white p-3 rounded-lg rounded-bl-none max-w-xs shadow-sm">
+                                <p className="text-sm text-muted-foreground animate-pulse">Typing...</p>
+                            </div>
                         </div>
-                        <div className="bg-white p-3 rounded-lg rounded-bl-none max-w-xs shadow-sm">
-                          <p className="text-sm">Hi there! Ask me anything about our product.</p>
-                        </div>
-                      </div>
+                      )}
                     </div>
-                    <div className="relative mt-4">
-                      <Input placeholder="Test your AI..." className="pr-10 bg-white" />
-                      <Button variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-primary">
+                    <form onSubmit={(e) => { e.preventDefault(); handleSandboxSubmit(); }} className="relative mt-4">
+                      <Input 
+                        placeholder="Test your AI..." 
+                        className="pr-10 bg-white" 
+                        value={sandboxInput}
+                        onChange={(e) => setSandboxInput(e.target.value)}
+                        disabled={isAiResponding}
+                      />
+                      <Button type="submit" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-primary" disabled={isAiResponding}>
                         <Send className="w-4 h-4" />
                       </Button>
-                    </div>
+                    </form>
                   </div>
                 </CardContent>
             </Card>
