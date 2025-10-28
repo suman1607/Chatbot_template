@@ -105,7 +105,8 @@ export default function AiTrainingPage() {
       setTrainingProgress(0);
       interval = setInterval(() => {
         setTrainingProgress(prev => {
-          if (prev >= 100) {
+          const newProgress = prev + 10;
+          if (newProgress >= 100) {
             clearInterval(interval);
             setIsTraining(false);
             toast({ title: "Training Complete", description: "Your AI has been updated with the new knowledge." });
@@ -116,7 +117,7 @@ export default function AiTrainingPage() {
             );
             return 100;
           }
-          return prev + 10;
+          return newProgress;
         });
       }, 500);
     }
