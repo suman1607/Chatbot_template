@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import {
   Book,
   Bot,
@@ -264,7 +264,9 @@ export default function AiTrainingPage() {
                                     </TableCell>
                                     <TableCell>{item.lastUpdated}</TableCell>
                                     <TableCell className="text-right">
-                                        <Button variant="ghost" size="icon" onClick={() => removeKnowledgeItem(item.id)}><Trash2 className="w-4 h-4 text-red-500"/></Button>
+                                        <Button variant="ghost" size="icon" onClick={() => removeKnowledgeItem(item.id)}>
+                                            <Trash2 className="w-4 h-4 text-red-500"/>
+                                        </Button>
                                     </TableCell>
                                 </TableRow>
                                 ))}
