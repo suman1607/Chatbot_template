@@ -93,7 +93,7 @@ export default function AiTrainingPage() {
     }, 500);
   };
 
-  const handleFileUpload = (file: File) => {
+  const handleFileUpload = useCallback((file: File) => {
     if (file.size > 5 * 1024 * 1024) { // 5MB limit
         toast({
             variant: "destructive",
@@ -106,9 +106,9 @@ export default function AiTrainingPage() {
     const newFileEntry = {
         id: Date.now(),
         source: file.name,
-        type: file.type.split('/')[1].toUpperCase() || 'File',
-        status: "Uploading",
-        lastUpdated: new Date().toLocaleTimeString(),
+        type: file.type.split('/')[1]?.toUpperCase() || 'File',
+        status: "Uploading" as "Uploading" | "Pending" | "Trained",
+        lastUpdated: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         progress: 0
     };
 
@@ -121,14 +121,14 @@ export default function AiTrainingPage() {
                 const newProgress = item.progress + 20;
                 if (newProgress >= 100) {
                     clearInterval(uploadInterval);
-                    return { ...item, progress: 100, status: "Pending" };
+                    return { ...item, progress: 100, status: "Pending" as "Pending" };
                 }
                 return { ...item, progress: newProgress };
             }
             return item;
         }));
     }, 200);
-  };
+  }, [toast]);
 
   const onDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -140,30 +140,30 @@ export default function AiTrainingPage() {
     setIsDragging(false);
   };
 
-  const onDrop = (e: React.DragEvent<HTMLDivElement>) => {
+  const onDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(false);
     const files = e.dataTransfer.files;
     if (files && files.length > 0) {
         handleFileUpload(files[0]);
     }
-  };
+  }, [handleFileUpload]);
 
-  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
       const files = e.target.files;
       if(files && files.length > 0) {
           handleFileUpload(files[0]);
       }
-  }
-
-  const sortedKnowledgeBase = useMemo(() => {
-    return [...knowledgeBaseData].sort((a, b) => b.id - a.id);
-  }, [knowledgeBaseData]);
+  }, [handleFileUpload]);
 
   const removeKnowledgeItem = (id: number) => {
     setKnowledgeBaseData(prev => prev.filter(item => item.id !== id));
     toast({ title: "Source removed", description: "The knowledge source has been deleted." });
   }
+
+  const sortedKnowledgeBase = useMemo(() => {
+    return [...knowledgeBaseData].sort((a, b) => b.id - a.id);
+  }, [knowledgeBaseData]);
 
   return (
     <div className="space-y-8">
@@ -300,7 +300,7 @@ export default function AiTrainingPage() {
             </Card>
         </div>
         
-        <div className="space-y-8">
+        <div className="lg:col-span-1 space-y-8 sticky top-24">
              <Card className="shadow-sm">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><Rocket className="w-6 h-6 text-primary"/> Train your AI</CardTitle>
