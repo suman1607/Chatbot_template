@@ -102,6 +102,14 @@ const WidgetPreview = ({ settings, isMobile, chatOpen, setChatOpen }: any) => {
                              </button>
                          </div>
                      </div>
+                     {settings.showBranding && (
+                        <div className="py-2 px-4 border-t">
+                            <a href="#" className="flex items-center justify-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors">
+                                <MessageSquare className="w-3.5 h-3.5"/>
+                                <span>Powered by <strong>ChatGenius</strong></span>
+                            </a>
+                        </div>
+                     )}
                  </div>
              )}
         </div>
