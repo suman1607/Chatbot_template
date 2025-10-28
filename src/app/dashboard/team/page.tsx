@@ -239,7 +239,6 @@ export default function TeamPage() {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="Agent">Agent</SelectItem>
-                                    <SelectItem value="Admin">Admin</SelectItem>
                                     <SelectItem value="Owner">Owner</SelectItem>
                                 </SelectContent>
                             </Select>
