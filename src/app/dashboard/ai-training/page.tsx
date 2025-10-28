@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   Book,
   Bot,
@@ -86,8 +86,8 @@ type ChatMessage = {
 };
 
 export default function AiTrainingPage() {
-  const [trainingProgress, setTrainingProgress] = useState(0);
   const [isTraining, setIsTraining] = useState(false);
+  const [trainingProgress, setTrainingProgress] = useState(0);
   const [knowledgeBaseData, setKnowledgeBaseData] = useState<KnowledgeItem[]>(initialKnowledgeBase);
   const [isDragging, setIsDragging] = useState(false);
   const { toast } = useToast();
@@ -475,3 +475,5 @@ export default function AiTrainingPage() {
     </div>
   );
 }
+
+    
