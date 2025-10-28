@@ -211,7 +211,6 @@ export default function AiTrainingPage() {
         .filter(item => item.status === 'Trained' && item.content)
         .map(item => ({ source: item.source, content: item.content! }));
     
-    // Prepare history for Genkit
     const history = sandboxMessages
         .filter(m => m.role === 'user' || m.role === 'model')
         .map(m => ({
@@ -378,7 +377,7 @@ export default function AiTrainingPage() {
             </Card>
         </div>
         
-        <div className="lg:col-span-1 space-y-8">
+        <div className="space-y-8">
              <Card className="shadow-sm">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><Rocket className="w-6 h-6 text-primary"/> Train your AI</CardTitle>
@@ -466,3 +465,5 @@ export default function AiTrainingPage() {
     </div>
   );
 }
+
+    
