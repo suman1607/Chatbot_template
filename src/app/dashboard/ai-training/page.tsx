@@ -122,13 +122,17 @@ export default function AiTrainingPage() {
     }, 500);
   };
 
+  const showFileTooLargeToast = useCallback((fileName: string) => {
+    toast({
+        variant: "destructive",
+        title: "File too large",
+        description: `"${fileName}" exceeds the 5MB size limit.`,
+    });
+  }, [toast]);
+
   const handleFileUpload = useCallback((file: File) => {
     if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        toast({
-            variant: "destructive",
-            title: "File too large",
-            description: `"${file.name}" exceeds the 5MB size limit.`,
-        });
+        showFileTooLargeToast(file.name);
         return;
     }
 
@@ -157,7 +161,7 @@ export default function AiTrainingPage() {
             return item;
         }));
     }, 200);
-  }, [toast]);
+  }, [showFileTooLargeToast]);
 
   const onDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -465,5 +469,3 @@ export default function AiTrainingPage() {
     </div>
   );
 }
-
-    
