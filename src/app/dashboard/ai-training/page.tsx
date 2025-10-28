@@ -198,10 +198,10 @@ export default function AiTrainingPage() {
   }, [handleFileUpload]);
 
 
-  const removeKnowledgeItem = (id: number) => {
+  const removeKnowledgeItem = useCallback((id: number) => {
     setKnowledgeBaseData(prev => prev.filter(item => item.id !== id));
     toast({ title: "Source removed", description: "The knowledge source has been deleted." });
-  }
+  }, [toast]);
 
   const handleSandboxSubmit = async () => {
     if (!sandboxInput.trim() || isAiResponding) return;
@@ -469,3 +469,5 @@ export default function AiTrainingPage() {
     </div>
   );
 }
+
+    
