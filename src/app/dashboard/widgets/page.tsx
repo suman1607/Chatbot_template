@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -135,9 +136,24 @@ export default function WidgetsPage() {
     const [installationCode, setInstallationCode] = useState('');
     const { toast } = useToast();
     
+    const installationInstructions = `<!-- ChatGenius Widget -->
+<script src="https://cdn.chatgenius.com/widget.js" async defer></script>
+<script>
+  window.addEventListener('load', () => {
+    if (window.ChatGenius) {
+      window.ChatGenius.init({
+        brandColor: '${settings.color}',
+        welcomeMessage: '${settings.welcomeMessage}',
+        // ... other settings
+      });
+    }
+  });
+</script>
+<!-- End ChatGenius Widget -->`;
+    
     useEffect(() => {
-        setInstallationCode(`<script src="https://cdn.chatgenius.com/widget.js" data-widget-id="wg_12345" async></script>`);
-    }, [])
+        setInstallationCode(installationInstructions);
+    }, [settings, installationInstructions])
 
     const handleSettingChange = (key: string, value: any) => {
         setSettings(prev => ({ ...prev, [key]: value }));
@@ -213,9 +229,9 @@ export default function WidgetsPage() {
                                 <TabsTrigger value="domains">Domain Whitelist</TabsTrigger>
                             </TabsList>
                             <TabsContent value="install" className="mt-4">
-                               <p className="text-sm text-muted-foreground mb-2">Copy and paste this code into the `&lt;head&gt;` section of your website.</p>
+                               <p className="text-sm text-muted-foreground mb-2">Copy and paste this code before the closing `&lt;/body&gt;` tag on your website.</p>
                                <div className="relative bg-gray-900 text-white p-4 rounded-lg font-mono text-xs">
-                                   <code>{installationCode}</code>
+                                   <pre><code>{installationCode}</code></pre>
                                    <Button size="sm" variant="ghost" className="absolute top-2 right-2 text-white hover:bg-gray-700" onClick={copyToClipboard}>
                                        Copy
                                    </Button>
@@ -274,3 +290,4 @@ export default function WidgetsPage() {
     </div>
   );
 }
+
