@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import {
   Book,
   Bot,
@@ -476,4 +476,3 @@ export default function AiTrainingPage() {
   );
 }
 
-    
