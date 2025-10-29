@@ -76,6 +76,28 @@ Make sure you have the following software installed:
 4.  **Open in Browser:**
     Open your browser and navigate to `http://localhost:9002`. You should now see the ChatGenius template live!
 
+## Deployment
+
+Deploying your static Next.js template is a simple process. We recommend using **Vercel** for the best experience.
+
+#### Option 1: Deploying with Vercel (Recommended)
+
+1.  **Push to Git:** Make sure your project code is in a GitHub, GitLab, or Bitbucket repository.
+2.  **Sign Up:** Create a free account on [Vercel](https://vercel.com) and connect it to your Git provider.
+3.  **Import Project:** From your Vercel dashboard, click **"Add New..."** -> **"Project"**. Find your repository and click **"Import"**.
+4.  **Deploy:** Vercel will automatically detect that you're using Next.js and configure the settings for you. Simply click the **"Deploy"** button.
+
+That's it! Your template will be live in a few moments.
+
+#### Option 2: Deploying with Netlify
+
+1.  **Push to Git:** Ensure your code is in a GitHub, GitLab, or Bitbucket repository.
+2.  **Sign Up:** Create a free account on [Netlify](https://netlify.com) and connect it to your Git provider.
+3.  **Import Project:** From your Netlify dashboard, select **"Import an existing project"** and choose your repository.
+4.  **Deploy Site:** Netlify will recognize it's a Next.js project. The build command (`next build`) and publish directory (`.next`) should be set automatically. Click **"Deploy site"**.
+
+Your site will be built and deployed to a live URL.
+
 ## Folder Structure
 
 The project uses a standard Next.js App Router structure to make finding and editing files easy.
