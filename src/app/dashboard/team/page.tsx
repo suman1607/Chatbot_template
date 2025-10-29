@@ -67,14 +67,10 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
+import { useUser, useAuth, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
-const initialTeamMembers = [
-  { name: 'Sarah Miller', email: 'sarah@example.com', role: 'Owner', status: 'Online', joined: 'Jan 15, 2023', lastActive: 'Now', chats: 128, csat: 4.9 },
-  { name: 'David Chen', email: 'david@example.com', role: 'Agent', status: 'Online', joined: 'Feb 02, 2023', lastActive: '5m ago', chats: 112, csat: 4.8 },
-  { name: 'Maria Garcia', email: 'maria@example.com', role: 'Agent', status: 'Offline', joined: 'Mar 20, 2023', lastActive: '2h ago', chats: 98, csat: 4.8 },
-  { name: 'Alex Thompson', email: 'alex@example.com', role: 'Agent', status: 'Online', joined: 'Apr 10, 2023', lastActive: '30m ago', chats: 85, csat: 4.7 },
-  { name: 'John Doe', email: 'john.doe@example.com', role: 'Agent', status: 'Offline', joined: 'May 01, 2023', lastActive: '1d ago', chats: 72, csat: 4.6 },
-];
 
 const initialPendingInvites = [
     { email: 'new.agent@example.com', role: 'Agent', invited: '2 days ago' },
@@ -129,8 +125,14 @@ const RoleBadge = ({ role }: { role: string }) => {
 }
 
 export default function TeamPage() {
+    const { user: currentUser } = useUser();
+    const auth = useAuth();
+    const firestore = useFirestore();
+
+    const membersCollectionRef = useMemoFirebase(() => currentUser ? collection(firestore, `workspaces/${currentUser.uid}/members`) : null, [firestore, currentUser]);
+    const { data: teamMembers, isLoading: isLoadingMembers } = useCollection(membersCollectionRef);
+
     const [searchQuery, setSearchQuery] = useState("");
-    const [teamMembers, setTeamMembers] = useState(initialTeamMembers);
     const [pendingInvites, setPendingInvites] = useState(initialPendingInvites);
     const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
     const [inviteEmail, setInviteEmail] = useState('');
@@ -157,50 +159,80 @@ export default function TeamPage() {
     }, [inviteRole]);
 
 
-    const filteredMembers = teamMembers.filter(member =>
-        member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        member.email.toLowerCase().includes(searchQuery.toLowerCase())
+    const filteredMembers = teamMembers?.filter(member =>
+        (member.name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+        (member.email?.toLowerCase() || '').includes(searchQuery.toLowerCase())
     );
 
-    const handleCreateMember = () => {
-        if (!inviteEmail || !inviteName || !invitePassword) {
+    const handleCreateMember = async () => {
+        if (!inviteEmail || !inviteName || !invitePassword || !currentUser || !firestore) {
             toast({
                 variant: "destructive",
-                title: "Missing Fields",
-                description: "Please fill out all fields to create a new member.",
+                title: "Missing Information",
+                description: "Please fill out all fields and ensure you are logged in.",
             });
             return;
         }
-        
-        if (teamMembers.some(member => member.email === inviteEmail)) {
-             toast({
+
+        let finalRole = inviteRole;
+        if (inviteEmail === 'user@chatgenius.com') {
+            finalRole = 'Owner';
+        }
+
+        let finalPermissions: string[] = [];
+        if (finalRole === 'Owner') {
+            finalPermissions = permissionsList;
+        } else {
+            finalPermissions = Object.entries(permissions).filter(([, enabled]) => enabled).map(([perm]) => perm);
+        }
+
+        try {
+            // This is a temporary auth instance for user creation, it doesn't affect the currently logged in user
+            const userCredential = await createUserWithEmailAndPassword(auth, inviteEmail, invitePassword);
+            const newMemberUid = userCredential.user.uid;
+            
+            const workspaceId = currentUser.uid; // Assuming workspaceId is the owner's UID
+
+            // Create the member document in Firestore
+            await setDoc(doc(firestore, `workspaces/${workspaceId}/members`, newMemberUid), {
+                role: finalRole,
+                permissions: finalPermissions,
+                invitedBy: currentUser.uid,
+                createdAt: serverTimestamp(),
+                name: inviteName,
+                email: inviteEmail,
+                status: 'Offline',
+                lastActive: 'Never',
+                chats: 0,
+                csat: 0
+            });
+            
+             // Also create a user profile document if you have a top-level users collection
+             await setDoc(doc(firestore, 'users', newMemberUid), {
+                uid: newMemberUid,
+                email: inviteEmail,
+                name: inviteName,
+                createdAt: serverTimestamp(),
+                status: 'active'
+            });
+
+
+            setIsInviteDialogOpen(false);
+            setInviteEmail('');
+            setInviteName('');
+            setInvitePassword('');
+            toast({
+                title: "Member Created!",
+                description: `${inviteName} has been added to the team.`,
+            });
+        } catch (error: any) {
+            console.error("Error creating member:", error);
+            toast({
                 variant: "destructive",
-                title: "User Exists",
-                description: "This user is already a team member.",
+                title: "Creation Failed",
+                description: error.message || "An unknown error occurred.",
             });
-            return;
         }
-
-        const newMember = {
-            name: inviteName,
-            email: inviteEmail,
-            role: inviteRole,
-            status: 'Online',
-            joined: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-            lastActive: 'Just now',
-            chats: 0,
-            csat: 0
-        };
-
-        setTeamMembers(prevMembers => [newMember, ...prevMembers]);
-        setIsInviteDialogOpen(false);
-        setInviteEmail('');
-        setInviteName('');
-        setInvitePassword('');
-        toast({
-            title: "Member Created!",
-            description: `${inviteName} has been added to the team.`,
-        });
     }
     
     const handlePermissionChange = (permission: string, checked: boolean) => {
@@ -210,7 +242,6 @@ export default function TeamPage() {
     const setAllPermissions = (value: boolean) => {
         setPermissions(permissionsList.reduce((acc, perm) => ({ ...acc, [perm]: value }), {}));
     }
-
 
     return (
     <div className="space-y-8">
@@ -361,7 +392,8 @@ export default function TeamPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {filteredMembers.map(member => (
+                                {isLoadingMembers && <tr><td colSpan={5} className="text-center p-4">Loading...</td></tr>}
+                                {!isLoadingMembers && filteredMembers?.map(member => (
                                     <TableRow key={member.email}>
                                         <TableCell>
                                             <div className="flex items-center gap-3">

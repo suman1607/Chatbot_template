@@ -4,11 +4,12 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import { useAuth, useUser } from "@/firebase";
+import { useAuth, useUser, useFirestore } from "@/firebase";
 import { initiateEmailSignUp, initiateEmailSignIn } from "@/firebase/non-blocking-login";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 
 
 const GoogleIcon = () => (
@@ -37,6 +38,7 @@ type AuthFormProps = {
 
 export function AuthForm({ isLogin, onToggle, onSuccess }: AuthFormProps) {
   const auth = useAuth();
+  const firestore = useFirestore();
   const { user } = useUser();
   const router = useRouter();
   const { toast } = useToast();
@@ -46,13 +48,52 @@ export function AuthForm({ isLogin, onToggle, onSuccess }: AuthFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    const setupNewUser = async (newUser: any) => {
+      if (firestore && !isLogin) {
+        // Create corresponding user, workspace, and member documents
+        const uid = newUser.uid;
+        const userDocRef = doc(firestore, 'users', uid);
+        const workspaceDocRef = doc(firestore, 'workspaces', uid);
+        const memberDocRef = doc(firestore, `workspaces/${uid}/members`, uid);
+
+        await Promise.all([
+          setDoc(userDocRef, {
+            uid,
+            email,
+            name,
+            createdAt: serverTimestamp(),
+            status: 'active',
+          }),
+          setDoc(workspaceDocRef, {
+            ownerId: uid,
+            name: `${name}'s Workspace`,
+          }),
+          setDoc(memberDocRef, {
+            role: 'Owner',
+            permissions: permissionsList, // All permissions for the owner
+            invitedBy: uid,
+            createdAt: serverTimestamp(),
+          }),
+        ]);
+      }
+    };
+
     if (user && isSubmitting) {
-      toast({ title: isLogin ? 'Signed in successfully' : 'Signed up successfully' });
-      onSuccess();
-      router.push('/dashboard');
-      setIsSubmitting(false);
+      if (!isLogin) {
+        setupNewUser(user).then(() => {
+          toast({ title: 'Signed up successfully' });
+          onSuccess();
+          router.push('/dashboard');
+          setIsSubmitting(false);
+        });
+      } else {
+        toast({ title: 'Signed in successfully' });
+        onSuccess();
+        router.push('/dashboard');
+        setIsSubmitting(false);
+      }
     }
-  }, [user, isSubmitting, isLogin, onSuccess, router, toast]);
+  }, [user, isSubmitting, isLogin, onSuccess, router, toast, firestore, email, name]);
 
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -122,3 +163,8 @@ export function AuthForm({ isLogin, onToggle, onSuccess }: AuthFormProps) {
     </div>
   );
 }
+
+const permissionsList = [
+    'Dashboard', 'Conversations', 'Analytics', 'AI Training', 
+    'Team', 'Widget', 'Settings', 'Support'
+];
