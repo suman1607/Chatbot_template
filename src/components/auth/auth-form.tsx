@@ -183,5 +183,3 @@ export function AuthForm({ isLogin, onToggle, onSuccess }: AuthFormProps) {
     </div>
   );
 }
-
-    
