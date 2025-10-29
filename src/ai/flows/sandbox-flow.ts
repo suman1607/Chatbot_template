@@ -1,16 +1,18 @@
 
 'use server';
 /**
- * @fileOverview A simple AI flow for the training sandbox.
+ * @fileOverview This is a placeholder for a Genkit AI flow.
+ * In this static template, the AI chat functionality in the sandbox is mocked.
+ * The developer who purchases this template should implement their own AI logic here
+ * and connect it to the sandbox component in `src/app/dashboard/ai-training/page.tsx`.
  *
- * - sandboxChat - A function that handles the chat interaction.
- * - SandboxChatInput - The input type for the sandboxChat function.
- * - SandboxChatOutput - The return type for the sandboxChat function.
+ * The `sandboxChat` function is provided as a starting point that matches the
+ * expected interface of the frontend component.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { z } from 'zod';
 
+// Define the expected input schema from the sandbox UI
 const SandboxChatInputSchema = z.object({
   history: z.array(z.object({
     role: z.enum(['user', 'model']),
@@ -25,27 +27,29 @@ const SandboxChatInputSchema = z.object({
 });
 export type SandboxChatInput = z.infer<typeof SandboxChatInputSchema>;
 
+// Define the expected output schema for the sandbox UI
 const SandboxChatOutputSchema = z.object({
   response: z.string().describe("The AI's response."),
 });
 export type SandboxChatOutput = z.infer<typeof SandboxChatOutputSchema>;
 
+
+/**
+ * A placeholder function for handling sandbox chat interactions.
+ * TODO: Replace this with your actual AI logic (e.g., using Genkit, OpenAI SDK, etc.).
+ * This function currently returns a static, simulated response.
+ * @param input The conversation history and knowledge context.
+ * @returns A promise that resolves to the AI's simulated response.
+ */
 export async function sandboxChat(input: SandboxChatInput): Promise<SandboxChatOutput> {
-  const { history, knowledge } = input;
-  const lastUserMessage = history[history.length - 1].content[0].text;
-  
-  const prompt = `You are a helpful assistant being tested in a sandbox.
-  Your knowledge is limited to the following sources:
-  ${knowledge.map(k => `- ${k.source}`).join('\n')}
+  console.log("AI Sandbox triggered with input:", input);
 
-  A user has asked: "${lastUserMessage}"
-  
-  Based on your knowledge, provide a helpful and concise response. If you cannot answer based on the provided knowledge, say so.`;
+  // Simulate a delay to mimic a real AI response time
+  await new Promise(resolve => setTimeout(resolve, 1000));
 
-  const { output } = await ai.generate({
-    prompt,
-    history,
-  });
+  const lastUserMessage = input.history.findLast(m => m.role === 'user')?.content[0]?.text;
 
-  return { response: output?.text() || "I'm sorry, I couldn't generate a response." };
+  const response = `This is a simulated AI response to your message: "${lastUserMessage}". A developer needs to implement the actual AI logic here.`;
+
+  return { response };
 }

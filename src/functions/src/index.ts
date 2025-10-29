@@ -7,19 +7,16 @@
  */
 
 // Example of a callable function structure.
-// Developers should uncomment and modify this or use firebase-functions v2.
+// Developers should uncomment and modify this or use their preferred backend service.
 /*
 import * as functions from "firebase-functions";
 import * as logger from "firebase-functions/logger";
 
-export const helloWorld = functions.https.onCall((data, context) => {
-  logger.info("Hello logs!", {structuredData: true});
-  return {message: "Hello from Firebase!"};
+export const myFunction = functions.https.onCall((data, context) => {
+  logger.info("Function called with data:", data);
+  // Add your logic here
+  return { result: "Success!" };
 });
 */
 
-// The existing functions are removed as they require a backend setup.
-// This file is left for the developer to implement their own functions.
-console.log("Cloud Functions directory is ready for implementation.");
-
-    
+console.log("Cloud Functions directory is ready for developer implementation.");
