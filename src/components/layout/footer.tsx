@@ -31,6 +31,13 @@ export function Footer() {
     setYear(new Date().getFullYear());
   }, []);
 
+  const handleSubscribe = (e: React.FormEvent) => {
+      e.preventDefault();
+      // TODO: Add your newsletter subscription logic here.
+      console.log("Subscribing with email:", (e.target as HTMLFormElement).email.value);
+      alert("Thank you for subscribing!");
+  }
+
   return (
     <footer className="relative border-t bg-background text-foreground transition-colors duration-300">
       <div className="container mx-auto px-4 py-12 md:px-6 lg:px-8">
@@ -40,11 +47,13 @@ export function Footer() {
             <p className="mb-6 text-muted-foreground">
               Join our newsletter for the latest updates and exclusive offers.
             </p>
-            <form className="relative">
+            <form className="relative" onSubmit={handleSubscribe}>
               <Input
                 type="email"
+                name="email"
                 placeholder="Enter your email"
                 className="pr-12 backdrop-blur-sm"
+                required
               />
               <Button
                 type="submit"

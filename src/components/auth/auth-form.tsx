@@ -4,12 +4,9 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import { useAuth, useUser, useFirestore } from "@/firebase";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 
 
 const GoogleIcon = () => (
@@ -36,15 +33,7 @@ type AuthFormProps = {
     onSuccess: () => void;
 };
 
-const permissionsList = [
-    'Dashboard', 'Conversations', 'Analytics', 'AI Training', 
-    'Team', 'Widget', 'Settings', 'Support'
-];
-
-
 export function AuthForm({ isLogin, onToggle, onSuccess }: AuthFormProps) {
-  const auth = useAuth();
-  const firestore = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
@@ -52,83 +41,29 @@ export function AuthForm({ isLogin, onToggle, onSuccess }: AuthFormProps) {
   const [name, setName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleLogin = async () => {
-    if (!auth) return;
-    setIsSubmitting(true);
-    try {
-        await signInWithEmailAndPassword(auth, email, password);
-        toast({ title: "Signed In Successfully!" });
-        onSuccess();
-        router.push('/dashboard');
-    } catch (error: any) {
-        toast({ variant: 'destructive', title: 'Sign In Failed', description: error.message });
-    } finally {
-        setIsSubmitting(false);
-    }
-  };
-
-  const handleSignUp = async () => {
-      if (!auth || !firestore) return;
-      setIsSubmitting(true);
-      try {
-          // 1. Create the user in Firebase Auth
-          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-          const newUser = userCredential.user;
-          const uid = newUser.uid;
-
-          // 2. Create all necessary Firestore documents
-          const userDocRef = doc(firestore, 'users', uid);
-          const workspaceDocRef = doc(firestore, 'workspaces', uid);
-          const memberDocRef = doc(firestore, `workspaces/${uid}/members`, uid);
-          
-          await Promise.all([
-            setDoc(userDocRef, {
-              uid,
-              email: newUser.email,
-              name: name,
-              createdAt: serverTimestamp(),
-              status: 'active',
-            }),
-            setDoc(workspaceDocRef, {
-              ownerId: uid,
-              name: `${name}'s Workspace`,
-              createdAt: serverTimestamp()
-            }),
-            setDoc(memberDocRef, {
-              role: 'Owner',
-              permissions: permissionsList, // Grant all permissions to the owner
-              invitedBy: uid,
-              createdAt: serverTimestamp(),
-              name: name,
-              email: newUser.email,
-              status: 'Online',
-              lastActive: 'Now'
-            }),
-          ]);
-
-          // 3. If all succeeds, show toast and redirect
-          toast({ title: "Account Created!" });
-          onSuccess();
-          router.push('/dashboard');
-
-      } catch (error: any) {
-          toast({ variant: 'destructive', title: 'Sign Up Failed', description: error.message });
-      } finally {
-          setIsSubmitting(false);
-      }
-  };
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!email || !password || (!isLogin && !name)) {
         toast({ variant: 'destructive', title: 'Error', description: "Please fill out all fields." });
         return;
     }
+    
+    setIsSubmitting(true);
+    
+    // TODO: Add your API call here for login or sign up.
     if (isLogin) {
-        await handleLogin();
+        console.log("Logging in with:", { email, password });
     } else {
-        await handleSignUp();
+        console.log("Signing up with:", { name, email, password });
     }
+
+    // Simulate API call
+    setTimeout(() => {
+        toast({ title: isLogin ? "Signed In Successfully!" : "Account Created!" });
+        onSuccess();
+        router.push('/dashboard');
+        setIsSubmitting(false);
+    }, 1000);
   };
 
   return (

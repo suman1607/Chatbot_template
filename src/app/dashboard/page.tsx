@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useUser } from '@/firebase';
+import { mockUser } from '@/lib/mock-data';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Card,
@@ -96,7 +96,7 @@ const recentActivities = [
 ]
 
 export default function DashboardPage() {
-  const { user } = useUser();
+  const user = mockUser;
 
   return (
     <div className="flex-1 space-y-6">

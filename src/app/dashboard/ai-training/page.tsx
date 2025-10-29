@@ -59,31 +59,22 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
-import { collection, doc, addDoc, setDoc, deleteDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
-import { sandboxChat } from '@/ai/flows/sandbox-flow';
 import { formatDistanceToNow } from 'date-fns';
+import { mockKnowledgeBase, mockTrainingHistory, mockAiConfig } from '@/lib/mock-data';
+import { cn } from '@/lib/utils';
 
 type KnowledgeItem = {
     id: string;
     title: string;
     type: "file" | "url" | "faq" | "text";
     status: "pending" | "trained" | "error" | "uploading";
-    createdAt: any;
+    createdAt: Date;
     sizeBytes?: number;
     errorMessage?: string;
     progress?: number;
 };
 
-type TrainingRun = {
-    id: string;
-    status: "queued" | "processing" | "completed" | "failed";
-    startedAt: any;
-    completedAt?: any;
-    initiatedBy: string;
-    sources: string[];
-    durationMs?: number;
-}
+type TrainingRun = (typeof mockTrainingHistory)[0];
 
 type ChatMessage = {
     role: 'user' | 'model' | 'system';
@@ -102,23 +93,13 @@ const StatusBadge = ({ status }: { status: KnowledgeItem['status'] }) => {
 }
 
 export default function AiTrainingPage() {
-  const { user } = useUser();
-  const firestore = useFirestore();
   const { toast } = useToast();
 
-  const workspaceId = user?.uid;
-
-  const knowledgeCollectionRef = useMemoFirebase(() => workspaceId ? collection(firestore, 'workspaces', workspaceId, 'knowledge') : null, [firestore, workspaceId]);
-  const { data: knowledgeBaseData, isLoading: isLoadingKnowledge } = useCollection<Omit<KnowledgeItem, 'id' | 'progress'>>(knowledgeCollectionRef);
-
-  const trainingRunsCollectionRef = useMemoFirebase(() => workspaceId ? collection(firestore, 'workspaces', workspaceId, 'trainingRuns') : null, [firestore, workspaceId]);
-  const { data: trainingHistory, isLoading: isLoadingHistory } = useCollection<Omit<TrainingRun, 'id'>>(trainingRunsCollectionRef);
-  
-  const aiConfigDocRef = useMemoFirebase(() => workspaceId ? doc(firestore, 'workspaces', workspaceId, 'aiConfig', 'config') : null, [firestore, workspaceId]);
-  const { data: aiConfig, isLoading: isLoadingAiConfig } = useDoc(aiConfigDocRef);
+  const [knowledgeBaseData, setKnowledgeBaseData] = useState<KnowledgeItem[]>(mockKnowledgeBase);
+  const [trainingHistory, setTrainingHistory] = useState(mockTrainingHistory);
+  const [aiConfig, setAiConfig] = useState(mockAiConfig);
   
   const [isTraining, setIsTraining] = useState(false);
-  const [currentRun, setCurrentRun] = useState<TrainingRun | null>(null);
 
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -142,28 +123,23 @@ export default function AiTrainingPage() {
   }, [aiConfig]);
 
   const handleFileUpload = useCallback(async (file: File) => {
-    if (!workspaceId || !knowledgeCollectionRef) return;
     if (file.size > 25 * 1024 * 1024) { // 25MB limit
         toast({ variant: "destructive", title: "File too large", description: `"${file.name}" exceeds the 25MB size limit.` });
         return;
     }
-    // Note: Firebase Storage upload logic would go here.
-    // For this implementation, we'll simulate the creation of the Firestore document.
-    try {
-        await addDoc(knowledgeCollectionRef, {
-            type: "file",
-            title: file.name,
-            sizeBytes: file.size,
-            status: "pending",
-            createdBy: user?.uid,
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
-        });
-        toast({ title: "File added", description: `${file.name} is ready for training.` });
-    } catch(e) {
-        toast({ variant: 'destructive', title: 'Upload Failed', description: 'Could not add file to knowledge base.' });
-    }
-  }, [workspaceId, knowledgeCollectionRef, user, toast]);
+    // TODO: Add your API call here to upload the file.
+    // The response should include the new knowledge item.
+    const newKnowledgeItem: KnowledgeItem = {
+      id: `file-${Date.now()}`,
+      type: "file",
+      title: file.name,
+      sizeBytes: file.size,
+      status: "pending",
+      createdAt: new Date(),
+    };
+    setKnowledgeBaseData(prev => [newKnowledgeItem, ...prev]);
+    toast({ title: "File added", description: `${file.name} is ready for training.` });
+  }, [toast]);
 
   const onDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -183,19 +159,13 @@ export default function AiTrainingPage() {
   }, [handleFileUpload]);
 
   const removeKnowledgeItem = async (id: string) => {
-    if (!workspaceId) return;
-    try {
-        await deleteDoc(doc(firestore, 'workspaces', workspaceId, 'knowledge', id));
-        // Note: Logic to delete from Storage would go here.
-        toast({ title: "Source removed", description: "The knowledge source has been deleted." });
-    } catch (e) {
-        toast({ variant: 'destructive', title: 'Deletion Failed', description: 'Could not remove the knowledge source.' });
-    }
+    // TODO: Add your API call here to delete the knowledge source.
+    console.log("Removing knowledge item:", id);
+    setKnowledgeBaseData(prev => prev.filter(item => item.id !== id));
+    toast({ title: "Source removed", description: "The knowledge source has been deleted." });
   };
 
   const startTraining = async () => {
-    if (!workspaceId || !trainingRunsCollectionRef) return;
-    
     const sourcesToTrain = knowledgeBaseData?.filter(k => k.status !== 'error').map(k => k.id) || [];
     if (sourcesToTrain.length === 0) {
       toast({ variant: 'destructive', title: 'No sources', description: 'Please add knowledge sources before training.' });
@@ -204,49 +174,23 @@ export default function AiTrainingPage() {
 
     setIsTraining(true);
     
-    try {
-        const newRunRef = await addDoc(trainingRunsCollectionRef, {
-            status: "queued",
-            sources: sourcesToTrain,
-            initiatedBy: user?.uid,
-            startedAt: serverTimestamp(),
-        });
-        
-        // Simulate backend training process
-        setTimeout(async () => {
-            await updateDoc(newRunRef, { status: "processing" });
-            setTimeout(async () => {
-                await updateDoc(newRunRef, { status: "completed", completedAt: serverTimestamp(), durationMs: 15000 });
-                if(aiConfigDocRef) await setDoc(aiConfigDocRef, { lastTrainedAt: serverTimestamp() }, { merge: true });
-                sourcesToTrain.forEach(async (id) => {
-                    const docRef = doc(firestore, 'workspaces', workspaceId, 'knowledge', id);
-                    await updateDoc(docRef, { status: 'trained' });
-                });
-                toast({ title: "Training Complete!", description: "Your AI has been updated." });
-                setIsTraining(false);
-            }, 15000);
-        }, 2000);
+    // TODO: Add your API call to start the training process.
+    console.log("Starting training with sources:", sourcesToTrain);
 
-    } catch (error) {
-        toast({ variant: 'destructive', title: 'Training Failed', description: 'Could not start the training process.' });
+    // Simulate backend training process
+    setTimeout(() => {
+        setKnowledgeBaseData(prev => prev.map(item => ({ ...item, status: 'trained' })));
+        setAiConfig(prev => ({ ...prev, lastTrainedAt: new Date() }));
+        toast({ title: "Training Complete!", description: "Your AI has been updated." });
         setIsTraining(false);
-    }
+    }, 10000);
   };
 
   const saveBehavior = async () => {
-      if(!aiConfigDocRef) return;
-      try {
-        await setDoc(aiConfigDocRef, {
-            systemPrompt,
-            persona: {
-                name: personaName,
-                tone: personaTone,
-            }
-        }, { merge: true });
-        toast({ title: "Behavior Saved", description: "AI persona and prompt have been updated." });
-      } catch (error) {
-        toast({ variant: 'destructive', title: 'Save Failed', description: 'Could not save AI behavior.' });
-      }
+      // TODO: Add your API call to save the AI behavior.
+      console.log("Saving behavior:", { systemPrompt, persona: { name: personaName, tone: personaTone } });
+      setAiConfig(prev => ({ ...prev, systemPrompt, persona: { name: personaName, tone: personaTone } }));
+      toast({ title: "Behavior Saved", description: "AI persona and prompt have been updated." });
   }
 
   const handleSandboxSubmit = async () => {
@@ -256,27 +200,23 @@ export default function AiTrainingPage() {
     setSandboxInput('');
     setIsAiResponding(true);
 
-    const trainedKnowledge = knowledgeBaseData
-      ?.filter(item => item.status === 'trained' && (item as any).content)
-      .map(item => ({ source: item.title, content: (item as any).content! })) || [];
-    const history = sandboxMessages.filter(m => m.role === 'user' || m.role === 'model').map(m => ({
-        role: m.role as 'user' | 'model', content: [{ text: m.text }]
-    }));
-    history.push({ role: 'user', content: [{ text: userMessage.text }] });
-
-    try {
-        const result = await sandboxChat({ history, knowledge: trainedKnowledge });
-        const aiMessage: ChatMessage = { role: 'model', text: result.response };
-        setSandboxMessages(prev => [...prev, aiMessage]);
-    } catch (error) {
-        setSandboxMessages(prev => [...prev, { role: 'model', text: "Sorry, I encountered an error." }]);
-    } finally {
-        setIsAiResponding(false);
-    }
+    // TODO: Replace this with your actual Genkit or AI SDK call.
+    console.log("Submitting to sandbox:", {
+      history: sandboxMessages,
+      knowledge: knowledgeBaseData.filter(k => k.status === 'trained'),
+      input: sandboxInput,
+    });
+    
+    // Simulate AI response
+    setTimeout(() => {
+      const aiMessage: ChatMessage = { role: 'model', text: "This is a simulated response based on the knowledge you provided. In a real app, I would use a generative AI model to answer." };
+      setSandboxMessages(prev => [...prev, aiMessage]);
+      setIsAiResponding(false);
+    }, 1500);
   };
   
   const sortedKnowledgeBase = useMemo(() => {
-    return [...(knowledgeBaseData || [])].sort((a, b) => b.createdAt?.toMillis() - a.createdAt?.toMillis());
+    return [...knowledgeBaseData].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }, [knowledgeBaseData]);
 
   return (
@@ -349,16 +289,14 @@ export default function AiTrainingPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {isLoadingKnowledge ? (
-                                    <TableRow><TableCell colSpan={5} className="text-center">Loading sources...</TableCell></TableRow>
-                                ) : sortedKnowledgeBase.length === 0 ? (
+                                {sortedKnowledgeBase.length === 0 ? (
                                      <TableRow><TableCell colSpan={5} className="text-center py-10 text-muted-foreground">No sources yet—upload your first document.</TableCell></TableRow>
                                 ) : sortedKnowledgeBase.map((item) => (
                                 <TableRow key={item.id}>
                                     <TableCell className="font-medium flex items-center gap-2"><FileText className="w-4 h-4 text-muted-foreground"/>{item.title}</TableCell>
                                     <TableCell><Badge variant="outline">{item.type.toUpperCase()}</Badge></TableCell>
                                     <TableCell><StatusBadge status={item.status} /></TableCell>
-                                    <TableCell>{item.createdAt ? formatDistanceToNow(item.createdAt.toDate(), { addSuffix: true }) : 'N/A'}</TableCell>
+                                    <TableCell>{formatDistanceToNow(item.createdAt, { addSuffix: true })}</TableCell>
                                     <TableCell className="text-right">
                                         <Button variant="ghost" size="icon" onClick={() => removeKnowledgeItem(item.id)}>
                                             <Trash2 className="w-4 h-4 text-red-500"/>
@@ -386,6 +324,7 @@ export default function AiTrainingPage() {
                             placeholder="Define your AI's core behavior. E.g., 'You are a helpful and friendly assistant...'" 
                             className="min-h-[100px]" 
                         />
+                         {/* TODO: Add your API call here to save the system prompt */}
                     </div>
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
@@ -421,9 +360,9 @@ export default function AiTrainingPage() {
                 <CardContent className="space-y-4">
                     {isTraining && (
                         <div>
-                            <Progress value={currentRun?.status === 'processing' ? 50 : 10} className="w-full" />
+                            <Progress value={50} className="w-full" />
                             <p className="text-sm text-muted-foreground text-center mt-2">
-                                Status: {currentRun?.status || "Queuing..."}
+                                Status: Processing...
                             </p>
                         </div>
                     )}
@@ -432,7 +371,7 @@ export default function AiTrainingPage() {
                         {isTraining ? 'Training...' : 'Start Training'}
                     </Button>
                      <p className="text-xs text-muted-foreground text-center">
-                        Last trained: {aiConfig?.lastTrainedAt ? formatDistanceToNow(aiConfig.lastTrainedAt.toDate(), {addSuffix: true}) : 'Never'}
+                        Last trained: {formatDistanceToNow(aiConfig.lastTrainedAt, {addSuffix: true})}
                     </p>
                 </CardContent>
             </Card>
@@ -476,13 +415,11 @@ export default function AiTrainingPage() {
                    <Table>
                         <TableHeader><TableRow><TableHead>Run ID</TableHead><TableHead>Status</TableHead><TableHead>Started</TableHead><TableHead>Duration</TableHead></TableRow></TableHeader>
                         <TableBody>
-                             {isLoadingHistory ? (
-                                <TableRow><TableCell colSpan={4} className="text-center">Loading history...</TableCell></TableRow>
-                            ) : trainingHistory?.map(run => (
+                            {trainingHistory?.map(run => (
                                 <TableRow key={run.id}>
                                     <TableCell className="font-mono text-xs">{run.id.substring(0, 8)}...</TableCell>
                                     <TableCell><StatusBadge status={run.status as any} /></TableCell>
-                                    <TableCell>{run.startedAt ? formatDistanceToNow(run.startedAt.toDate(), {addSuffix: true}) : 'N/A'}</TableCell>
+                                    <TableCell>{formatDistanceToNow(run.startedAt, {addSuffix: true})}</TableCell>
                                     <TableCell>{run.durationMs ? `${(run.durationMs / 1000).toFixed(1)}s` : '...'}</TableCell>
                                 </TableRow>
                             ))}

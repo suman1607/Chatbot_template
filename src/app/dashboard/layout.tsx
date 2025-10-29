@@ -27,10 +27,11 @@ import {
   LifeBuoy,
   User as UserIcon,
 } from 'lucide-react';
-import { useUser } from '@/firebase';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { LogoutButton } from '@/components/auth/logout-button';
+import { mockUser, mockUserPermissions } from '@/lib/mock-data';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 const menuGroups = [
     {
@@ -56,19 +57,23 @@ const bottomMenuItems = [
     { href: '/dashboard/support', icon: LifeBuoy, label: 'Support', permission: 'Support' },
 ]
 
+const LogoutButton = () => (
+    // TODO: A real logout button should be implemented here.
+    // For the template, this can link to the homepage or a login page.
+    <Button asChild variant="destructive" size="sm" className="w-full">
+        <Link href="/">Logout</Link>
+    </Button>
+);
+
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { user, isUserLoading } = useUser();
-  const router = useRouter();
+  const user = mockUser;
+  const userPermissions = mockUserPermissions;
   const pathname = usePathname();
-
-  // This is a placeholder. In a real app, you'd fetch this from your backend
-  // based on the logged-in user's role and permissions.
-  const userPermissions = ['Dashboard', 'Conversations', 'Analytics', 'AI Training', 'Team', 'Widget', 'Settings', 'Support'];
 
   const filteredMenuGroups = menuGroups.map(group => ({
     ...group,
@@ -77,19 +82,6 @@ export default function DashboardLayout({
 
   const filteredBottomMenuItems = bottomMenuItems.filter(item => userPermissions.includes(item.permission));
 
-
-  if (isUserLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-primary"></div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    router.push('/');
-    return null;
-  }
 
   return (
     <SidebarProvider>
@@ -151,7 +143,7 @@ export default function DashboardLayout({
       <SidebarInset>
         <header className="flex items-center justify-between p-4 border-b bg-background">
             <SidebarTrigger />
-            <h2 className="text-xl font-semibold">Dashboard</h2>
+            <h2 className="text-xl font-semibold capitalize">{pathname.split('/').pop()?.replace('-', ' ') || 'Dashboard'}</h2>
         </header>
         <main className="flex-1 p-6 bg-muted/5">
             {children}

@@ -42,10 +42,8 @@ import {
   AlertTriangle,
   Info
 } from 'lucide-react';
-import { useUser } from '@/firebase';
 import { usePathname, useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { getAuth, signOut } from 'firebase/auth';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -59,7 +57,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { mockUser } from '@/lib/mock-data';
 
 
 const menuGroups = [
@@ -106,7 +104,7 @@ const notifications = [
 ]
 
 const Header = () => {
-    const { user } = useUser();
+    const user = mockUser;
     const { state, toggleSidebar } = useSidebar();
     const [unreadMessages, setUnreadMessages] = useState(messages.filter(m => m.unread).length);
     const [hasUnreadNotifications, setHasUnreadNotifications] = useState(true);
@@ -209,37 +207,18 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, isUserLoading } = useUser();
   const router = useRouter();
   const pathname = usePathname();
-
-  useEffect(() => {
-    if (isUserLoading) return;
-
-    if (!user && pathname !== '/admin/login') {
-      router.push('/admin/login');
-    }
-    
-    if(user && pathname === '/admin/login') {
-      router.push('/admin/dashboard');
-    }
-  }, [user, isUserLoading, pathname, router]);
-
-  if (isUserLoading || (!user && pathname !== '/admin/login')) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-100">
-        <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-primary"></div>
-      </div>
-    );
-  }
+  const user = mockUser; // Use mock user for static template
 
   if (pathname === '/admin/login') {
       return <>{children}</>;
   }
 
   const handleLogout = () => {
-    const auth = getAuth();
-    signOut(auth);
+    // TODO: Implement your own logout logic.
+    // For this template, we just redirect to the login page.
+    console.log("Logging out...");
     router.push('/admin/login');
   };
 

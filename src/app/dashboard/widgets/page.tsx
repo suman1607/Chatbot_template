@@ -1,20 +1,18 @@
 
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   Palette,
-  Settings,
   Code,
-  Plus,
-  Trash2,
-  Monitor,
-  Smartphone,
   Eye,
   Send,
   X,
   Bot,
   MessageSquare,
+  Monitor,
+  Smartphone,
+  Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -31,12 +29,10 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc, setDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { mockWorkspace } from '@/lib/mock-data';
 
-
+// This is a purely presentational component for the widget preview.
 const WidgetPreview = ({ settings, isMobile, chatOpen, setChatOpen }: any) => {
-    
     return (
         <div className={`relative overflow-hidden rounded-lg border-4 border-gray-800 bg-gray-100 shadow-2xl ${isMobile ? 'w-full max-w-[280px] h-[500px]' : 'w-full h-[500px]'}`}>
              <div className="absolute inset-0 bg-[url('https://picsum.photos/seed/bg/800/600')] bg-cover bg-center opacity-50"></div>
@@ -108,44 +104,25 @@ const WidgetPreview = ({ settings, isMobile, chatOpen, setChatOpen }: any) => {
 }
 
 export default function WidgetsPage() {
-    const { user } = useUser();
-    const firestore = useFirestore();
-    const workspaceId = user?.uid; // Assuming user uid is the workspace id
+    // Initialize state directly from the imported mock data
+    const [settings, setSettings] = useState(mockWorkspace.widgetSettings);
+    const [whitelistedDomains, setWhitelistedDomains] = useState<string[]>(mockWorkspace.whitelistedDomains);
 
-    // Fetch workspace data
-    const workspaceRef = useMemoFirebase(() => workspaceId ? doc(firestore, 'workspaces', workspaceId) : null, [firestore, workspaceId]);
-    const { data: workspaceData, isLoading } = useDoc(workspaceRef);
-
-    const [settings, setSettings] = useState({
-        name: "My First Widget",
-        brandColor: '#F97316',
-        welcomeMessage: 'Hello! How can we help you today?',
-        showBranding: true,
-    });
     const [isMobilePreview, setIsMobilePreview] = useState(false);
     const [chatOpen, setChatOpen] = useState(true);
     const [domainInput, setDomainInput] = useState('');
-    const [whitelistedDomains, setWhitelistedDomains] = useState<string[]>([]);
-    const [installationCode, setInstallationCode] = useState('');
+    
     const { toast } = useToast();
 
-    // Effect to update local state when firestore data loads
-    useEffect(() => {
-        if (workspaceData) {
-            setSettings(s => ({ ...s, ...workspaceData.widgetSettings }));
-            setWhitelistedDomains(workspaceData.whitelistedDomains || []);
-        }
-    }, [workspaceData]);
-    
-    useEffect(() => {
-        const origin = typeof window !== 'undefined' ? window.location.origin : 'https://your-deployed-site.com';
-        const installationInstructions = `<!-- ChatGenius Widget -->
-<script src="${origin}/widget.js" async defer></script>
+    // The installation code is now generated from the mock data.
+    // A developer would replace these values with their dynamic data.
+    const installationCode = `<!-- ChatGenius Widget -->
+<script src="https://your-site.com/widget.js" async defer></script>
 <script>
   window.addEventListener('load', () => {
     if (window.ChatGenius) {
       window.ChatGenius.init({
-        workspaceId: '${workspaceId}',
+        workspaceId: 'YOUR_WORKSPACE_ID',
         brandColor: '${settings.brandColor}',
         welcomeMessage: '${settings.welcomeMessage}',
         showBranding: ${settings.showBranding}
@@ -154,51 +131,33 @@ export default function WidgetsPage() {
   });
 </script>
 <!-- End ChatGenius Widget -->`;
-        setInstallationCode(installationInstructions);
-    }, [settings, workspaceId]);
 
     const handleSettingChange = (key: string, value: any) => {
         setSettings(prev => ({ ...prev, [key]: value }));
     }
 
     const saveSettings = useCallback(async () => {
-        if (!workspaceRef) return;
-        try {
-            await updateDoc(workspaceRef, { widgetSettings: settings });
-            toast({ title: 'Success!', description: 'Widget settings have been saved.' });
-        } catch (error) {
-            toast({ variant: 'destructive', title: 'Error!', description: 'Failed to save settings.' });
-        }
-    }, [workspaceRef, settings, toast]);
+        // TODO: Add your API call here to save the widget settings.
+        console.log("Saving widget settings:", settings);
+        toast({ title: 'Success!', description: 'Widget settings have been saved.' });
+    }, [settings, toast]);
 
     const addDomain = useCallback(async () => {
-        if (domainInput && workspaceRef && !whitelistedDomains.includes(domainInput)) {
-            try {
-                await updateDoc(workspaceRef, {
-                    whitelistedDomains: arrayUnion(domainInput)
-                });
-                setWhitelistedDomains(prev => [...prev, domainInput]);
-                setDomainInput('');
-                toast({ title: 'Domain added!' });
-            } catch (error) {
-                toast({ variant: 'destructive', title: 'Error!', description: 'Failed to add domain.' });
-            }
+        if (domainInput && !whitelistedDomains.includes(domainInput)) {
+            // TODO: Add your API call here to whitelist the domain.
+            console.log("Adding domain:", domainInput);
+            setWhitelistedDomains(prev => [...prev, domainInput]);
+            setDomainInput('');
+            toast({ title: 'Domain added!' });
         }
-    }, [domainInput, workspaceRef, whitelistedDomains, toast]);
+    }, [domainInput, whitelistedDomains, toast]);
     
     const removeDomain = useCallback(async (domainToRemove: string) => {
-        if (workspaceRef) {
-             try {
-                await updateDoc(workspaceRef, {
-                    whitelistedDomains: arrayRemove(domainToRemove)
-                });
-                setWhitelistedDomains(prev => prev.filter(d => d !== domainToRemove));
-                toast({ title: 'Domain removed.' });
-            } catch (error) {
-                toast({ variant: 'destructive', title: 'Error!', description: 'Failed to remove domain.' });
-            }
-        }
-    }, [workspaceRef, toast]);
+        // TODO: Add your API call here to remove the domain from the whitelist.
+        console.log("Removing domain:", domainToRemove);
+        setWhitelistedDomains(prev => prev.filter(d => d !== domainToRemove));
+        toast({ title: 'Domain removed.' });
+    }, [toast]);
     
     const copyToClipboard = () => {
         navigator.clipboard.writeText(installationCode).then(() => {
@@ -207,10 +166,6 @@ export default function WidgetsPage() {
                 description: 'The installation code has been copied.',
             });
         });
-    }
-
-    if (isLoading) {
-        return <div>Loading...</div>
     }
 
   return (

@@ -7,13 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Bot, LogIn } from "lucide-react";
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/firebase';
-import { initiateEmailSignIn } from '@/firebase/non-blocking-login';
 import React, { useState } from 'react';
 
 export default function AdminLoginPage() {
     const router = useRouter();
-    const auth = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -22,16 +19,18 @@ export default function AdminLoginPage() {
         e.preventDefault();
         setError('');
         
-        // In a real app, you would have admin-specific sign-in logic.
-        // For this demo, we'll just use the standard email sign-in.
-        // And then redirect to the admin dashboard.
-        initiateEmailSignIn(auth, email, password);
-        
-        // A real implementation should wait for auth state to change
-        // and verify admin privileges before redirecting.
-        setTimeout(() => {
-            router.push('/admin/dashboard');
-        }, 1000);
+        // TODO: Replace this with your actual authentication logic.
+        console.log("Attempting to log in with:", { email, password });
+
+        // For this template, we'll simulate a successful login and redirect.
+        // In a real app, you would verify credentials against your backend.
+        if (email === "admin@example.com" && password === "password") {
+            setTimeout(() => {
+                router.push('/admin/dashboard');
+            }, 1000);
+        } else {
+            setError("Invalid credentials. Please try again.");
+        }
     };
 
     return (
@@ -62,6 +61,7 @@ export default function AdminLoginPage() {
                             <Input 
                                 id="password" 
                                 type="password" 
+                                placeholder="password"
                                 required 
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
