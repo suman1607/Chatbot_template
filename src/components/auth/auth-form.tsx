@@ -36,6 +36,12 @@ type AuthFormProps = {
     onSuccess: () => void;
 };
 
+const permissionsList = [
+    'Dashboard', 'Conversations', 'Analytics', 'AI Training', 
+    'Team', 'Widget', 'Settings', 'Support'
+];
+
+
 export function AuthForm({ isLogin, onToggle, onSuccess }: AuthFormProps) {
   const auth = useAuth();
   const firestore = useFirestore();
@@ -50,54 +56,57 @@ export function AuthForm({ isLogin, onToggle, onSuccess }: AuthFormProps) {
   useEffect(() => {
     const setupNewUser = async (newUser: any) => {
       if (firestore && !isLogin) {
-        // Create corresponding user, workspace, and member documents
         const uid = newUser.uid;
         const userDocRef = doc(firestore, 'users', uid);
         const workspaceDocRef = doc(firestore, 'workspaces', uid);
         const memberDocRef = doc(firestore, `workspaces/${uid}/members`, uid);
 
+        // This is the crucial part that was missing.
+        // It creates the necessary documents for a new user/workspace.
         await Promise.all([
           setDoc(userDocRef, {
             uid,
-            email,
-            name,
+            email: newUser.email,
+            name: name,
             createdAt: serverTimestamp(),
             status: 'active',
           }),
           setDoc(workspaceDocRef, {
             ownerId: uid,
             name: `${name}'s Workspace`,
+            createdAt: serverTimestamp()
           }),
           setDoc(memberDocRef, {
             role: 'Owner',
-            permissions: permissionsList, // All permissions for the owner
+            permissions: permissionsList, // Grant all permissions to the owner
             invitedBy: uid,
             createdAt: serverTimestamp(),
+            name: name,
+            email: newUser.email,
+            status: 'Online',
+            lastActive: 'Now'
           }),
         ]);
       }
     };
 
     if (user && isSubmitting) {
-      if (!isLogin) {
         setupNewUser(user).then(() => {
-          toast({ title: 'Signed up successfully' });
-          onSuccess();
-          router.push('/dashboard');
-          setIsSubmitting(false);
+            toast({ title: isLogin ? "Signed In Successfully!" : "Account Created!" });
+            onSuccess();
+            router.push('/dashboard');
+            setIsSubmitting(false);
         });
-      } else {
-        toast({ title: 'Signed in successfully' });
-        onSuccess();
-        router.push('/dashboard');
-        setIsSubmitting(false);
-      }
     }
   }, [user, isSubmitting, isLogin, onSuccess, router, toast, firestore, email, name]);
 
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!email || !password || (!isLogin && !name)) {
+        toast({ variant: 'destructive', title: 'Error', description: "Please fill out all fields." });
+        return;
+    }
     setIsSubmitting(true);
     try {
         if(isLogin) {
@@ -164,7 +173,4 @@ export function AuthForm({ isLogin, onToggle, onSuccess }: AuthFormProps) {
   );
 }
 
-const permissionsList = [
-    'Dashboard', 'Conversations', 'Analytics', 'AI Training', 
-    'Team', 'Widget', 'Settings', 'Support'
-];
+    
