@@ -8,29 +8,37 @@ import { Label } from "@/components/ui/label";
 import { Bot, LogIn } from "lucide-react";
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
+import { useToast } from "@/hooks/use-toast";
 
 export default function AdminLoginPage() {
     const router = useRouter();
+    const { toast } = useToast();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+        setIsLoading(true);
         
         // TODO: Replace this with your actual authentication logic.
         console.log("Attempting to log in with:", { email, password });
 
-        // For this template, we'll simulate a successful login and redirect.
-        // In a real app, you would verify credentials against your backend.
-        if (email === "admin@example.com" && password === "password") {
-            setTimeout(() => {
+        // For this template, we'll simulate a login attempt.
+        setTimeout(() => {
+            if (email === "admin@example.com" && password === "password") {
+                toast({
+                    title: "Login Successful!",
+                    description: "Redirecting to your dashboard...",
+                });
                 router.push('/admin/dashboard');
-            }, 1000);
-        } else {
-            setError("Invalid credentials. Please try again.");
-        }
+            } else {
+                setError("Invalid credentials. Please try again.");
+                setIsLoading(false);
+            }
+        }, 1000);
     };
 
     return (
@@ -68,8 +76,8 @@ export default function AdminLoginPage() {
                             />
                         </div>
                         {error && <p className="text-sm text-red-500">{error}</p>}
-                        <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white">
-                            <LogIn className="mr-2 h-4 w-4" /> Sign In
+                        <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white" disabled={isLoading}>
+                            {isLoading ? "Signing In..." : <><LogIn className="mr-2 h-4 w-4" /> Sign In</>}
                         </Button>
                     </form>
                 </CardContent>
@@ -77,3 +85,5 @@ export default function AdminLoginPage() {
         </div>
     );
 }
+
+    

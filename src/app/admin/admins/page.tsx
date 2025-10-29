@@ -53,16 +53,13 @@ import {
   Plus,
   MoreHorizontal,
   Search,
-  Mail,
   UserPlus,
   ShieldCheck,
-  Clock,
-  BarChart,
   Activity,
   Trash2,
   RefreshCw
 } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
+import { useToast } from '@/hooks/use-toast';
 
 const teamMembers = [
   { name: 'Admin User', email: 'admin.user@example.com', role: 'Super Admin', status: 'Online', lastActive: 'Now', avatarSeed: 'admin' },
@@ -79,7 +76,7 @@ const pendingInvites = [
 const recentActivity = [
     { text: "Admin User logged in from new device", time: "5m ago", icon: <ShieldCheck/> },
     { text: "Broadcast 'New Features v2.5' was sent", time: "1h ago", icon: <Activity/> },
-    { text: "Jane Doe resolved 5 support tickets", time: "3h ago", icon: <BarChart/> },
+    { text: "Jane Doe resolved 5 support tickets", time: "3h ago", icon: <ShieldCheck/> },
 ];
 
 const getInitials = (name: string) => {
@@ -103,11 +100,21 @@ const RoleBadge = ({ role }: { role: string }) => {
 
 export default function AdminAdminsPage() {
     const [searchQuery, setSearchQuery] = useState("");
+    const { toast } = useToast();
 
     const filteredMembers = teamMembers.filter(member =>
         member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         member.email.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    const handleInvite = () => {
+        // TODO: Add your API call here to invite a team member.
+        console.log("Inviting new member...");
+        toast({
+            title: "Invitation Sent!",
+            description: "The new team member has been invited.",
+        });
+    }
 
     return (
     <div className="space-y-8">
@@ -157,7 +164,7 @@ export default function AdminAdminsPage() {
                     </div>
                     <DialogFooter>
                         <Button variant="outline">Cancel</Button>
-                        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground" onClick={handleInvite}>
                             Send Invitation
                         </Button>
                     </DialogFooter>

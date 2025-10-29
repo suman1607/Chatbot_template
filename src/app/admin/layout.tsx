@@ -30,11 +30,9 @@ import {
   User as UserIcon,
   Bell,
   Mail,
-  LogOut,
   Power,
   Users2,
   GitBranch,
-  KeyRound,
   Settings,
   PanelLeft,
   CheckCheck,
@@ -44,7 +42,7 @@ import {
 } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
@@ -216,8 +214,8 @@ export default function AdminLayout({
   }
 
   const handleLogout = () => {
-    // TODO: Implement your own logout logic.
-    // For this template, we just redirect to the login page.
+    // This is a static template, so we just redirect.
+    // In a real app, you would implement your own logout logic.
     console.log("Logging out...");
     router.push('/admin/login');
   };
@@ -287,3 +285,5 @@ export default function AdminLayout({
     </SidebarProvider>
   );
 }
+
+    

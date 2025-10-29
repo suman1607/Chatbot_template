@@ -86,6 +86,15 @@ export default function AdminIntegrationsPage() {
         toast({ title: "Copied!", description: `API Key for "${name}" copied to clipboard.` });
     };
 
+    const handleCreateKey = () => {
+        // TODO: Add your API call here to create an API key.
+        console.log("Creating API key...");
+        toast({
+            title: "API Key Created!",
+            description: "Your new API key has been generated.",
+        });
+    }
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -135,7 +144,7 @@ export default function AdminIntegrationsPage() {
                                             </div>
                                             <DialogFooter>
                                                 <Button variant="outline">Cancel</Button>
-                                                <Button className="bg-primary hover:bg-primary/90 text-white">Create Key</Button>
+                                                <Button className="bg-primary hover:bg-primary/90 text-white" onClick={handleCreateKey}>Create Key</Button>
                                             </DialogFooter>
                                         </DialogContent>
                                     </Dialog>
