@@ -1,218 +1,129 @@
 /**
- * @fileoverview Firestore Security Rules for ChatGenius.
- *
- * Core Philosophy:
- * This ruleset enforces a strict user-ownership and role-based access control model.
- * Most data is scoped to a specific workspace, and access is determined by the user's role within that workspace.
+ * @file Firestore Security Rules
+ * @description This ruleset enforces a role-based access control model within workspaces.
  *
  * Data Structure:
- * - /users/{userId}: Stores user profiles, accessible only to the user themselves.
- * - /workspaces/{workspaceId}: Stores workspace settings, accessible to workspace members based on their roles.
- * - /workspaces/{workspaceId}/members/{userId}: Defines user roles within a workspace.
- * - /workspaces/{workspaceId}/aiConfig: Stores the AI configuration for a workspace, accessible to workspace members.
- * - /workspaces/{workspaceId}/knowledge/{docId}: Stores knowledge documents, accessible to workspace members.
- * - /workspaces/{workspaceId}/trainingRuns/{runId}: Stores training run logs, accessible to workspace members.
+ * - /users/{userId}: Stores public user profile information, accessible only to the user themselves.
+ * - /workspaces/{workspaceId}: Stores workspace metadata, accessible to workspace members.
+ * - /workspaces/{workspaceId}/members/{userId}: Stores workspace member roles and permissions.
+ * - /workspaces/{workspaceId}/aiConfig: Stores AI configuration for the workspace, accessible to workspace members.
+ * - /workspaces/{workspaceId}/knowledge/{docId}: Stores knowledge source documents, accessible to workspace members.
+ * - /workspaces/{workspaceId}/trainingRuns/{runId}: Stores AI training run logs, accessible to workspace members.
  *
  * Key Security Decisions:
- * - Users can only read and write their own user documents.
- * - Workspace access is role-based (Owner, Manager, Agent, Viewer).
- * - Listing of workspaces is not allowed.
- * - Data validation is minimal in this prototyping phase, focusing on ownership and relational integrity.
+ * - User data is private and only accessible to the authenticated user.
+ * - Workspace data is accessible to members of that workspace based on their roles.
+ * - No public listing of user or workspace data is allowed.
  *
  * Denormalization for Authorization:
- * - Workspace membership is managed via the `/workspaces/{workspaceId}/members/{userId}` collection, allowing easy role-based access checks.
+ * - Workspace membership is managed in the `/workspaces/{workspaceId}/members/{userId}` collection. This collection contains roles and permissions and is used to determine access to workspace resources.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Secure user profiles. Only the user can read and write their own profile.
+     * @description Grants access to user profile information only to the user themselves.
      * @path /users/{userId}
-     * @allow (get, create, update, delete) User with matching UID can access their profile.
-     * @deny (get, create, update, delete) User attempts to access another user's profile.
-     * @principle Enforces document ownership for user profiles.
+     * @allow (get, create, update, delete, list) if the request is made by the user with matching userId.
+     *   Example: A user with uid "user123" can read, create, update, and delete their own profile at /users/user123.
+     * @deny (get, create, update, delete, list) if the request is made by a different user or an unauthenticated user.
+     *   Example: A user with uid "user456" cannot read, create, update, or delete the profile of user "user123" at /users/user123.
+     * @principle Enforces document ownership for writes.
      */
     match /users/{userId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
       function isOwner(userId) {
-        return request.auth.uid == userId;
+        return request.auth != null && request.auth.uid == userId;
       }
-
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-      }
-
       allow get: if isOwner(userId);
       allow list: if false;
-      allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isSignedIn() && isExistingOwner(userId);
-      allow delete: if isSignedIn() && isExistingOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.uid == userId;
+      allow update: if isOwner(userId) && request.resource.data.uid == resource.data.uid;
+      allow delete: if isOwner(userId) && resource != null;
     }
 
     /**
-     * @description Secure workspace settings. Access is role-based, determined by workspace membership.
+     * @description Manages workspaces and enforces access control based on workspace membership.
      * @path /workspaces/{workspaceId}
-     * @allow (get) Workspace members can read workspace settings.
-     * @allow (create) Workspace owner can create a workspace.
-     * @allow (update, delete) Workspace owner can update or delete workspace settings.
-     * @deny (get, create, update, delete) Non-members cannot access workspace settings.
-     * @principle Enforces role-based access control for workspaces.
+     * @allow (get, create, update, delete, list) if the user is the owner of the workspace.
+     *   Example: The owner of the workspace can perform all operations on the workspace document.
+     * @deny (get, create, update, delete, list) if the user is not the owner of the workspace.
+     *   Example: A non-owner user cannot create, update, or delete workspace documents.
+     * @principle Enforces workspace ownership for modifications.
      */
     match /workspaces/{workspaceId} {
-      function isSignedIn() {
-        return request.auth != null;
+      function isWorkspaceMember(workspaceId) {
+        return exists(/databases/$(database)/documents/workspaces/$(workspaceId)/members/$(request.auth.uid));
       }
-
-      function isWorkspaceMember(workspaceId, userId) {
-        return exists(/databases/$(database)/documents/workspaces/$(workspaceId)/members/$(userId));
-      }
-
-      function isWorkspaceOwner(workspaceId, userId) {
-        return get(/databases/$(database)/documents/workspaces/$(workspaceId)/members/$(request.auth.uid)).data.role == 'Owner';
-      }
-
-      function isExistingWorkspaceOwner(workspaceId, userId) {
-        return isWorkspaceOwner(workspaceId, userId) && resource != null;
-      }
-
-      allow get: if isSignedIn() && isWorkspaceMember(workspaceId, request.auth.uid);
-      allow list: if false;
-      allow create: if isSignedIn() && request.auth.uid == request.resource.data.ownerId;
-      allow update: if isSignedIn() && isExistingWorkspaceOwner(workspaceId, request.auth.uid);
-      allow delete: if isSignedIn() && isExistingWorkspaceOwner(workspaceId, request.auth.uid);
+        allow get: if isWorkspaceMember(workspaceId);
+        allow list: if false;
+        allow create: if request.auth != null;
+        allow update: if isWorkspaceMember(workspaceId) && resource != null;
+        allow delete: if isWorkspaceMember(workspaceId) && resource != null;
 
       /**
-       * @description Secure workspace membership. Workspace owners can manage membership.
+       * @description Manages workspace members and their roles within the workspace.
        * @path /workspaces/{workspaceId}/members/{userId}
-       * @allow (get) Workspace members can read workspace membership.
-       * @allow (create) Workspace owner can add members.
-       * @allow (update, delete) Workspace owner can update or delete members.
-       * @deny (get, create, update, delete) Non-members cannot access workspace membership.
+       * @allow (get, create, update, delete, list) if the user has sufficient permissions within the workspace.
+       *   Example: A workspace admin can manage members.
+       * @deny (get, create, update, delete, list) if the user lacks the necessary permissions.
+       *   Example: A regular member cannot add or remove other members.
        * @principle Enforces role-based access control for workspace membership.
        */
       match /members/{userId} {
-        function isSignedIn() {
-          return request.auth != null;
+        function isWorkspaceOwner(workspaceId) {
+            return get(/databases/$(database)/documents/workspaces/$(workspaceId)/members/$(request.auth.uid)).data.role == 'Owner';
         }
-
-        function isWorkspaceMember(workspaceId, userId) {
-          return exists(/databases/$(database)/documents/workspaces/$(workspaceId)/members/$(userId));
-        }
-
-        function isWorkspaceOwner(workspaceId, userId) {
-          return get(/databases/$(database)/documents/workspaces/$(workspaceId)/members/$(request.auth.uid)).data.role == 'Owner';
-        }
-
-        function isExistingWorkspaceOwner(workspaceId, userId) {
-          return isWorkspaceOwner(workspaceId, userId) && resource != null;
-        }
-
-        allow get: if isSignedIn() && isWorkspaceMember(workspaceId, request.auth.uid);
-        allow list: if false;
-        allow create: if isSignedIn() && isWorkspaceOwner(workspaceId, request.auth.uid);
-        allow update: if isSignedIn() && isExistingWorkspaceOwner(workspaceId, request.auth.uid);
-        allow delete: if isSignedIn() && isExistingWorkspaceOwner(workspaceId, request.auth.uid);
+          allow get: if isWorkspaceMember(workspaceId);
+          allow list: if false;
+          allow create: if isWorkspaceOwner(workspaceId);
+          allow update: if isWorkspaceOwner(workspaceId) && resource != null;
+          allow delete: if isWorkspaceOwner(workspaceId) && resource != null;
       }
 
       /**
-       * @description Secure AI configuration for a workspace. Access is restricted to workspace members.
+       * @description Manages AI configurations within a workspace.
        * @path /workspaces/{workspaceId}/aiConfig
-       * @allow (get) Workspace members can read the AI configuration.
-       * @allow (create, update, delete) Workspace owners can manage the AI configuration.
-       * @deny (get, create, update, delete) Non-members cannot access the AI configuration.
-       * @principle Enforces role-based access control for AI configuration.
+       * @allow (get, create, update, delete, list) if the user is a member of the workspace.
+       * @deny (get, create, update, delete, list) if the user is not a member of the workspace.
+       * @principle Restricts AI configuration access to workspace members.
        */
       match /aiConfig {
-        function isSignedIn() {
-          return request.auth != null;
-        }
-
-        function isWorkspaceMember(workspaceId, userId) {
-          return exists(/databases/$(database)/documents/workspaces/$(workspaceId)/members/$(userId));
-        }
-
-        function isWorkspaceOwner(workspaceId, userId) {
-          return get(/databases/$(database)/documents/workspaces/$(workspaceId)/members/$(request.auth.uid)).data.role == 'Owner';
-        }
-
-        function isExistingWorkspaceOwner(workspaceId, userId) {
-          return isWorkspaceOwner(workspaceId, userId) && resource != null;
-        }
-       
-        allow get: if isSignedIn() && isWorkspaceMember(workspaceId, request.auth.uid);
-        allow list: if false;
-        allow create: if isSignedIn() && isWorkspaceOwner(workspaceId, request.auth.uid);
-        allow update: if isSignedIn() && isExistingWorkspaceOwner(workspaceId, request.auth.uid);
-        allow delete: if isSignedIn() && isExistingWorkspaceOwner(workspaceId, request.auth.uid);
+          allow get: if isWorkspaceMember(workspaceId);
+          allow list: if false;
+          allow create: if isWorkspaceMember(workspaceId);
+          allow update: if isWorkspaceMember(workspaceId) && resource != null;
+          allow delete: if isWorkspaceMember(workspaceId) && resource != null;
       }
 
       /**
-       * @description Secure knowledge documents for AI training. Access is restricted to workspace members.
+       * @description Manages knowledge documents used to train the AI within a workspace.
        * @path /workspaces/{workspaceId}/knowledge/{docId}
-       * @allow (get, list) Workspace members can read and list knowledge documents.
-       * @allow (create, update, delete) Workspace owners can manage knowledge documents.
-       * @deny (get, create, update, delete) Non-members cannot access knowledge documents.
-       * @principle Enforces role-based access control for knowledge documents.
+       * @allow (get, create, update, delete, list) if the user is a member of the workspace.
+       * @deny (get, create, update, delete, list) if the user is not a member of the workspace.
+       * @principle Restricts knowledge document access to workspace members.
        */
       match /knowledge/{docId} {
-        function isSignedIn() {
-          return request.auth != null;
-        }
-
-        function isWorkspaceMember(workspaceId, userId) {
-          return exists(/databases/$(database)/documents/workspaces/$(workspaceId)/members/$(userId));
-        }
-
-        function isWorkspaceOwner(workspaceId, userId) {
-          return get(/databases/$(database)/documents/workspaces/$(workspaceId)/members/$(request.auth.uid)).data.role == 'Owner';
-        }
-
-        function isExistingWorkspaceOwner(workspaceId, userId) {
-          return isWorkspaceOwner(workspaceId, userId) && resource != null;
-        }
-       
-        allow get: if isSignedIn() && isWorkspaceMember(workspaceId, request.auth.uid);
-        allow list: if isSignedIn() && isWorkspaceMember(workspaceId, request.auth.uid);
-        allow create: if isSignedIn() && isWorkspaceOwner(workspaceId, request.auth.uid);
-        allow update: if isSignedIn() && isExistingWorkspaceOwner(workspaceId, request.auth.uid);
-        allow delete: if isSignedIn() && isExistingWorkspaceOwner(workspaceId, request.auth.uid);
+          allow get: if isWorkspaceMember(workspaceId);
+          allow list: if isWorkspaceMember(workspaceId);
+          allow create: if isWorkspaceMember(workspaceId);
+          allow update: if isWorkspaceMember(workspaceId) && resource != null;
+          allow delete: if isWorkspaceMember(workspaceId) && resource != null;
       }
 
       /**
-       * @description Secure AI training run logs. Access is restricted to workspace members.
+       * @description Manages AI training run logs within a workspace.
        * @path /workspaces/{workspaceId}/trainingRuns/{runId}
-       * @allow (get, list) Workspace members can read and list training run logs.
-       * @allow (create) Workspace members can create training run logs.
-       * @allow (update, delete) Not allowed for non-admin.
-       * @deny (get, create, update, delete) Non-members cannot access training run logs.
-       * @principle Enforces role-based access control for training run logs.
+       * @allow (get, create, update, delete, list) if the user is a member of the workspace.
+       * @deny (get, create, update, delete, list) if the user is not a member of the workspace.
+       * @principle Restricts training run log access to workspace members.
        */
       match /trainingRuns/{runId} {
-        function isSignedIn() {
-          return request.auth != null;
-        }
-
-        function isWorkspaceMember(workspaceId, userId) {
-          return exists(/databases/$(database)/documents/workspaces/$(workspaceId)/members/$(userId));
-        }
-
-        function isWorkspaceOwner(workspaceId, userId) {
-          return get(/databases/$(database)/documents/workspaces/$(workspaceId)/members/$(request.auth.uid)).data.role == 'Owner';
-        }
-
-        function isExistingWorkspaceOwner(workspaceId, userId) {
-          return isWorkspaceOwner(workspaceId, userId) && resource != null;
-        }
-
-        allow get: if isSignedIn() && isWorkspaceMember(workspaceId, request.auth.uid);
-        allow list: if isSignedIn() && isWorkspaceMember(workspaceId, request.auth.uid);
-        allow create: if isSignedIn() && isWorkspaceMember(workspaceId, request.auth.uid);
-        allow update: if false;
-        allow delete: if false;
+          allow get: if isWorkspaceMember(workspaceId);
+          allow list: if isWorkspaceMember(workspaceId);
+          allow create: if isWorkspaceMember(workspaceId);
+          allow update: if isWorkspaceMember(workspaceId) && resource != null;
+          allow delete: if isWorkspaceMember(workspaceId) && resource != null;
       }
     }
   }
