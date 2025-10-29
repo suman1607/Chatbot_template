@@ -55,7 +55,6 @@ import {
   Star,
   Clock,
   MessageSquare,
-  ShieldCheck,
   Search,
   Mail,
   UserPlus,
@@ -66,16 +65,18 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
-import { cn } from '@/lib/utils';
-import { useUser, useAuth, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { mockUser } from '@/lib/mock-data';
 
+const initialTeamMembers = [
+    { name: 'John Doe', email: 'john.doe@example.com', role: 'Owner', status: 'Online', lastActive: 'Now', csat: 4.9, chats: 128, avatarSeed: 'john' },
+    { name: 'Jane Smith', email: 'jane.smith@example.com', role: 'Manager', status: 'Online', lastActive: '5m ago', csat: 4.8, chats: 112, avatarSeed: 'jane' },
+    { name: 'David Chen', email: 'david.chen@example.com', role: 'Agent', status: 'Offline', lastActive: '2h ago', csat: 4.7, chats: 98, avatarSeed: 'david' },
+];
 
 const initialPendingInvites = [
     { email: 'new.agent@example.com', role: 'Agent', invited: '2 days ago' },
     { email: 'another.agent@example.com', role: 'Agent', invited: '5 days ago' },
-]
+];
 
 const recentActivity = [
     { text: "Nisha resolved ticket #112", time: "5m ago" },
@@ -106,7 +107,6 @@ const rolePermissions: { [key: string]: string[] } = {
     'Manager': ['Dashboard', 'Conversations', 'Analytics', 'Support'],
 };
 
-
 const getInitials = (name: string) => {
     const names = name.split(' ');
     if (names.length > 1) {
@@ -125,12 +125,10 @@ const RoleBadge = ({ role }: { role: string }) => {
 }
 
 export default function TeamPage() {
-    const { user: currentUser } = useUser();
-    const auth = useAuth();
-    const firestore = useFirestore();
+    const currentUser = mockUser;
 
-    const membersCollectionRef = useMemoFirebase(() => currentUser ? collection(firestore, `workspaces/${currentUser.uid}/members`) : null, [firestore, currentUser]);
-    const { data: teamMembers, isLoading: isLoadingMembers } = useCollection(membersCollectionRef);
+    const [teamMembers, setTeamMembers] = useState(initialTeamMembers);
+    const [isLoadingMembers, setIsLoadingMembers] = useState(true);
 
     const [searchQuery, setSearchQuery] = useState("");
     const [pendingInvites, setPendingInvites] = useState(initialPendingInvites);
@@ -143,6 +141,14 @@ export default function TeamPage() {
     const [permissions, setPermissions] = useState<Permissions>(defaultPermissions);
 
     const { toast } = useToast();
+
+    useEffect(() => {
+        // Simulate loading
+        const timer = setTimeout(() => {
+            setIsLoadingMembers(false);
+        }, 1000);
+        return () => clearTimeout(timer);
+    }, []);
 
     useEffect(() => {
         const newPermissions: Permissions = { ...defaultPermissions };
@@ -159,80 +165,47 @@ export default function TeamPage() {
     }, [inviteRole]);
 
 
-    const filteredMembers = teamMembers?.filter(member =>
+    const filteredMembers = teamMembers.filter(member =>
         (member.name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
         (member.email?.toLowerCase() || '').includes(searchQuery.toLowerCase())
     );
 
-    const handleCreateMember = async () => {
-        if (!inviteEmail || !inviteName || !invitePassword || !currentUser || !firestore) {
+    const handleCreateMember = () => {
+        if (!inviteEmail || !inviteName || !invitePassword) {
             toast({
                 variant: "destructive",
                 title: "Missing Information",
-                description: "Please fill out all fields and ensure you are logged in.",
+                description: "Please fill out all fields.",
             });
             return;
         }
 
-        let finalRole = inviteRole;
-        if (inviteEmail === 'user@chatgenius.com') {
-            finalRole = 'Owner';
-        }
+        const newMember = {
+            name: inviteName,
+            email: inviteEmail,
+            role: inviteRole,
+            status: 'Offline',
+            lastActive: 'Never',
+            csat: 0,
+            chats: 0,
+            avatarSeed: inviteName.toLowerCase().split(' ')[0],
+        };
 
-        let finalPermissions: string[] = [];
-        if (finalRole === 'Owner') {
-            finalPermissions = permissionsList;
-        } else {
-            finalPermissions = Object.entries(permissions).filter(([, enabled]) => enabled).map(([perm]) => perm);
-        }
+        // TODO: Add your API call here to create the user and add them to the team.
+        console.log("Creating new member:", newMember);
+        
+        setTeamMembers(prev => [newMember, ...prev]);
 
-        try {
-            // This is a temporary auth instance for user creation, it doesn't affect the currently logged in user
-            const userCredential = await createUserWithEmailAndPassword(auth, inviteEmail, invitePassword);
-            const newMemberUid = userCredential.user.uid;
-            
-            const workspaceId = currentUser.uid; // Assuming workspaceId is the owner's UID
+        setIsInviteDialogOpen(false);
+        setInviteEmail('');
+        setInviteName('');
+        setInvitePassword('');
+        setInviteRole('Agent');
 
-            // Create the member document in Firestore
-            await setDoc(doc(firestore, `workspaces/${workspaceId}/members`, newMemberUid), {
-                role: finalRole,
-                permissions: finalPermissions,
-                invitedBy: currentUser.uid,
-                createdAt: serverTimestamp(),
-                name: inviteName,
-                email: inviteEmail,
-                status: 'Offline',
-                lastActive: 'Never',
-                chats: 0,
-                csat: 0
-            });
-            
-             // Also create a user profile document if you have a top-level users collection
-             await setDoc(doc(firestore, 'users', newMemberUid), {
-                uid: newMemberUid,
-                email: inviteEmail,
-                name: inviteName,
-                createdAt: serverTimestamp(),
-                status: 'active'
-            });
-
-
-            setIsInviteDialogOpen(false);
-            setInviteEmail('');
-            setInviteName('');
-            setInvitePassword('');
-            toast({
-                title: "Member Created!",
-                description: `${inviteName} has been added to the team.`,
-            });
-        } catch (error: any) {
-            console.error("Error creating member:", error);
-            toast({
-                variant: "destructive",
-                title: "Creation Failed",
-                description: error.message || "An unknown error occurred.",
-            });
-        }
+        toast({
+            title: "Member Invited!",
+            description: `${inviteName} has been added to the team.`,
+        });
     }
     
     const handlePermissionChange = (permission: string, checked: boolean) => {
@@ -358,7 +331,7 @@ export default function TeamPage() {
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setIsInviteDialogOpen(false)}>Cancel</Button>
                         <Button className="bg-primary hover:bg-primary/90 text-primary-foreground" onClick={handleCreateMember}>
-                            Send Invite + Create Account
+                            Send Invite
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -393,12 +366,12 @@ export default function TeamPage() {
                             </TableHeader>
                             <TableBody>
                                 {isLoadingMembers && <tr><td colSpan={5} className="text-center p-4">Loading...</td></tr>}
-                                {!isLoadingMembers && filteredMembers?.map(member => (
+                                {!isLoadingMembers && filteredMembers.map(member => (
                                     <TableRow key={member.email}>
                                         <TableCell>
                                             <div className="flex items-center gap-3">
                                                 <Avatar>
-                                                    <AvatarImage src={`https://picsum.photos/seed/${member.email}/40/40`} />
+                                                    <AvatarImage src={`https://picsum.photos/seed/${member.avatarSeed}/40/40`} />
                                                     <AvatarFallback className="bg-primary text-primary-foreground font-bold">{getInitials(member.name)}</AvatarFallback>
                                                 </Avatar>
                                                 <div>

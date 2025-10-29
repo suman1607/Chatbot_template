@@ -41,7 +41,7 @@ export function AuthForm({ isLogin, onToggle, onSuccess }: AuthFormProps) {
   const [name, setName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!email || !password || (!isLogin && !name)) {
         toast({ variant: 'destructive', title: 'Error', description: "Please fill out all fields." });
@@ -51,8 +51,9 @@ export function AuthForm({ isLogin, onToggle, onSuccess }: AuthFormProps) {
     setIsSubmitting(true);
     
     // TODO: Add your API call here for login or sign up.
+    // On sign up, make sure to create the user, workspace, and member documents.
     if (isLogin) {
-        console.log("Logging in with:", { email, password });
+        console.log("Signing in with:", { email, password });
     } else {
         console.log("Signing up with:", { name, email, password });
     }
@@ -60,7 +61,7 @@ export function AuthForm({ isLogin, onToggle, onSuccess }: AuthFormProps) {
     // Simulate API call
     setTimeout(() => {
         toast({ title: isLogin ? "Signed In Successfully!" : "Account Created!" });
-        onSuccess();
+        onSuccess(); // Closes the dialog
         router.push('/dashboard');
         setIsSubmitting(false);
     }, 1000);

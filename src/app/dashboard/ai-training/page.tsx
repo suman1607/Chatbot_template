@@ -122,13 +122,14 @@ export default function AiTrainingPage() {
     }
   }, [aiConfig]);
 
-  const handleFileUpload = useCallback(async (file: File) => {
+  const handleFileUpload = (file: File) => {
     if (file.size > 25 * 1024 * 1024) { // 25MB limit
         toast({ variant: "destructive", title: "File too large", description: `"${file.name}" exceeds the 25MB size limit.` });
         return;
     }
     // TODO: Add your API call here to upload the file.
     // The response should include the new knowledge item.
+    console.log('Uploading file:', file.name);
     const newKnowledgeItem: KnowledgeItem = {
       id: `file-${Date.now()}`,
       type: "file",
@@ -139,33 +140,33 @@ export default function AiTrainingPage() {
     };
     setKnowledgeBaseData(prev => [newKnowledgeItem, ...prev]);
     toast({ title: "File added", description: `${file.name} is ready for training.` });
-  }, [toast]);
+  };
 
-  const onDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+  const onDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(false);
     const files = e.dataTransfer.files;
     if (files && files.length > 0) {
         Array.from(files).forEach(handleFileUpload);
     }
-  }, [handleFileUpload]);
+  };
   
-  const onFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
         Array.from(files).forEach(handleFileUpload);
     }
     if (fileInputRef.current) fileInputRef.current.value = "";
-  }, [handleFileUpload]);
+  };
 
-  const removeKnowledgeItem = async (id: string) => {
+  const removeKnowledgeItem = (id: string) => {
     // TODO: Add your API call here to delete the knowledge source.
     console.log("Removing knowledge item:", id);
     setKnowledgeBaseData(prev => prev.filter(item => item.id !== id));
     toast({ title: "Source removed", description: "The knowledge source has been deleted." });
   };
 
-  const startTraining = async () => {
+  const startTraining = () => {
     const sourcesToTrain = knowledgeBaseData?.filter(k => k.status !== 'error').map(k => k.id) || [];
     if (sourcesToTrain.length === 0) {
       toast({ variant: 'destructive', title: 'No sources', description: 'Please add knowledge sources before training.' });
@@ -183,17 +184,17 @@ export default function AiTrainingPage() {
         setAiConfig(prev => ({ ...prev, lastTrainedAt: new Date() }));
         toast({ title: "Training Complete!", description: "Your AI has been updated." });
         setIsTraining(false);
-    }, 10000);
+    }, 5000);
   };
 
-  const saveBehavior = async () => {
+  const saveBehavior = () => {
       // TODO: Add your API call to save the AI behavior.
       console.log("Saving behavior:", { systemPrompt, persona: { name: personaName, tone: personaTone } });
       setAiConfig(prev => ({ ...prev, systemPrompt, persona: { name: personaName, tone: personaTone } }));
       toast({ title: "Behavior Saved", description: "AI persona and prompt have been updated." });
   }
 
-  const handleSandboxSubmit = async () => {
+  const handleSandboxSubmit = () => {
     if (!sandboxInput.trim() || isAiResponding) return;
     const userMessage: ChatMessage = { role: 'user', text: sandboxInput };
     setSandboxMessages(prev => [...prev, userMessage]);
@@ -324,7 +325,6 @@ export default function AiTrainingPage() {
                             placeholder="Define your AI's core behavior. E.g., 'You are a helpful and friendly assistant...'" 
                             className="min-h-[100px]" 
                         />
-                         {/* TODO: Add your API call here to save the system prompt */}
                     </div>
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
